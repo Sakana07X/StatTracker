@@ -27,7 +27,7 @@ Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.13+. Auto-dete
 
 ### Usage
 
-Put `StatTracker.jar` into `plugins`, restart. Zero dependencies.
+Put `StatTracker-<version>.jar` from Releases into `plugins`, restart. Zero dependencies.
 
 Data: `plugins/StatTracker/tracker-data.json`
 
@@ -102,7 +102,7 @@ Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.13 以上。启动时�
 
 ### 使用
 
-把 `StatTracker.jar` 丢进 `plugins`，重启。不需要前置插件。
+把 Releases 里的 `StatTracker-<version>.jar` 丢进 `plugins`，重启。不需要前置插件。
 
 数据：`plugins/StatTracker/tracker-data.json`
 
