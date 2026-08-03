@@ -3,6 +3,7 @@ package com.server.stattracker;
 import com.server.stattracker.api.StatProvider;
 import com.server.stattracker.compat.ServerScheduler;
 import com.server.stattracker.data.DataManager;
+import com.server.stattracker.integration.CyuTitlesBridge;
 import com.server.stattracker.integration.LuckPermsBridge;
 import com.server.stattracker.integration.PAPIExpansion;
 import com.server.stattracker.tracker.*;
@@ -16,6 +17,7 @@ public class StatTrackerPlugin extends JavaPlugin {
     private ServerScheduler scheduler;
     private MovementTracker movementTracker;
     private PlaytimeTracker playtimeTracker;
+    private CyuTitlesBridge cyuTitlesBridge;
 
     @Override
     public void onEnable() {
@@ -38,6 +40,11 @@ public class StatTrackerPlugin extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PAPIExpansion(this).register();
             getLogger().info("PlaceholderAPI 扩展已注册");
+        }
+
+        // CyuTitles permission check every 30s
+        if (cyuTitlesBridge != null) {
+            scheduler.runAtFixedRate(600, 600, () -> cyuTitlesBridge.flush());
         }
 
         getLogger().info("StatTracker 已启用 — 27 个追踪器，"
@@ -87,6 +94,11 @@ public class StatTrackerPlugin extends JavaPlugin {
         register(pm, new SurvivalTracker(this));
         register(pm, playtimeTracker);
         register(pm, new ChatTracker(this));
+
+        if (luckPermsBridge.isAvailable()) {
+            cyuTitlesBridge = new CyuTitlesBridge(this);
+            register(pm, cyuTitlesBridge);
+        }
     }
 
     private void register(org.bukkit.plugin.PluginManager pm, org.bukkit.event.Listener listener) {
