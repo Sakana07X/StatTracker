@@ -1,0 +1,36 @@
+﻿plugins {
+    id 'java'
+}
+
+group = 'com.server'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url = 'https://repo.luckperms.net/repository/maven-public/' }
+}
+
+dependencies {
+    // Spigot API — 兼容 Bukkit / Spigot / Paper / Folia 全家桶
+    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'net.luckperms:api:5.4'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    archiveFileName = 'StatTracker.jar'
+}
