@@ -2,6 +2,8 @@ package com.server.stattracker;
 
 import com.server.stattracker.api.StatProvider;
 import com.server.stattracker.compat.ServerScheduler;
+import com.server.stattracker.condition.ConditionManager;
+import com.server.stattracker.condition.ConditionPAPI;
 import com.server.stattracker.data.DataManager;
 import com.server.stattracker.integration.LuckPermsBridge;
 import com.server.stattracker.integration.PAPIExpansion;
@@ -16,9 +18,11 @@ public class StatTrackerPlugin extends JavaPlugin {
     private ServerScheduler scheduler;
     private MovementTracker movementTracker;
     private PlaytimeTracker playtimeTracker;
+    private ConditionManager conditionManager;
     
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         scheduler = new ServerScheduler(this);
 
         dataManager = new DataManager(this, "tracker-data.json");
@@ -26,6 +30,12 @@ public class StatTrackerPlugin extends JavaPlugin {
 
         statProvider = new StatProvider(dataManager);
         luckPermsBridge = new LuckPermsBridge(this);
+
+        boolean conditionsEnabled = getConfig().getBoolean("conditions.enabled", true);
+        if (conditionsEnabled) {
+            conditionManager = new ConditionManager(this);
+            conditionManager.load();
+        }
 
         registerTrackers();
         scheduler.runAtFixedRate(60, 60, () -> dataManager.saveDirty());
@@ -37,11 +47,14 @@ public class StatTrackerPlugin extends JavaPlugin {
         }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PAPIExpansion(this).register();
-            getLogger().info("PlaceholderAPI 扩展已注册");
+            if (conditionManager != null) {
+                new ConditionPAPI(this, conditionManager).register();
+            }
         }
 
-        getLogger().info("StatTracker 已启用 — 27 个追踪器，"
-            + (scheduler.isFolia() ? "Folia" : "Bukkit/Spigot/Paper") + " 模式");
+        getLogger().info("StatTracker enabled - 27 trackers, "
+            + (scheduler.isFolia() ? "Folia" : "Bukkit/Spigot/Paper") + " mode"
+            + (conditionsEnabled ? ", conditions ON" : ", conditions OFF"));
     }
 
     @Override
@@ -51,6 +64,7 @@ public class StatTrackerPlugin extends JavaPlugin {
 
     public DataManager getDataManager()        { return dataManager; }
     public StatProvider getAPI()                { return statProvider; }
+    public ConditionManager getConditionManager()  { return conditionManager; }
     public LuckPermsBridge getLuckPermsBridge() { return luckPermsBridge; }
     public ServerScheduler getScheduler()       { return scheduler; }
 

@@ -49,6 +49,33 @@ int biomes = api.getSetSize(player, StatKeys.VISITED_BIOMES);
 double walk = api.getDouble(player, StatKeys.WALK_DISTANCE);
 ```
 
+### Condition System
+
+Define conditions in `conditions.yml` and evaluate them against tracked stats. Useful for achievement/title unlocks, anti-cheat checks, or any logic that needs a yes/no answer from player data.
+
+Toggle in `config.yml`: `conditions.enabled: true` (default on). Set it to `false` and the whole condition system is skipped, only raw data remains.
+
+```yaml
+conditions:
+  mining_master:
+    display: "Mining Master"
+    type: COUNTER
+    key: "mining.mat.STONE"
+    operator: ">="
+    value: 10000
+```
+
+Types: `COUNTER`, `DOUBLE`, `SET_SIZE`, `SET_CONTAINS`, `BOOLEAN`. Operators: `>=`, `<=`, `==`, `>`, `<`, `!=`.
+
+Placeholders: `%statcond_<id>%` → `true`/`false`, `%statcond_<id>_display%`, `%statcond_met_count%`, `%statcond_met_percent%`.
+
+Java API:
+
+```java
+StatTrackerPlugin plugin = (StatTrackerPlugin) Bukkit.getPluginManager().getPlugin("StatTracker");
+boolean met = plugin.getConditionManager().isMet(player.getUniqueId(), "mining_master");
+```
+
 ---
 
 ## 中文
@@ -94,4 +121,31 @@ StatProvider api = statTracker.getAPI();
 long kills = api.getCounter(player, StatKeys.MOB_KILLS);
 int biomes = api.getSetSize(player, StatKeys.VISITED_BIOMES);
 double walk = api.getDouble(player, StatKeys.WALK_DISTANCE);
+```
+
+### 条件系统
+
+在 `conditions.yml` 里定义条件，对追踪到的数据进行判断，适合做成就/称号解锁、反作弊检测，或者任何只需要“是/否”答案的逻辑。
+
+开关：`config.yml` 里 `conditions.enabled: true`（默认开）。改成 `false` 会跳过整个条件系统，只保留原始数据。
+
+```yaml
+conditions:
+  mining_master:
+    display: "挖矿大师"
+    type: COUNTER
+    key: "mining.mat.STONE"
+    operator: ">="
+    value: 10000
+```
+
+类型：`COUNTER`、`DOUBLE`、`SET_SIZE`、`SET_CONTAINS`、`BOOLEAN`。运算符：`>=`、`<=`、`==`、`>`、`<`、`!=`。
+
+占位符：`%statcond_<id>%` → `true`/`false`，`%statcond_<id>_display%`、`%statcond_met_count%`、`%statcond_met_percent%`。
+
+Java API：
+
+```java
+StatTrackerPlugin plugin = (StatTrackerPlugin) Bukkit.getPluginManager().getPlugin("StatTracker");
+boolean met = plugin.getConditionManager().isMet(player.getUniqueId(), "mining_master");
 ```

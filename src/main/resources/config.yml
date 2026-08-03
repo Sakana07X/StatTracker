@@ -1,0 +1,7 @@
+# StatTracker Configuration
+
+conditions:
+  # Enable condition evaluation system
+  # When enabled: %statcond_xxx% placeholders and Java API are available
+  # When disabled: only raw stat data is accessible
+  enabled: true

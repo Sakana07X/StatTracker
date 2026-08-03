@@ -1,0 +1,39 @@
+# StatTracker Conditions
+# Define conditions that evaluate player stats to true/false.
+# Other plugins can read results via %statcond_<id>% (true/false) or Java API.
+#
+# Supported types: COUNTER, DOUBLE, SET_SIZE, SET_CONTAINS, BOOLEAN
+# Operators: >=, <=, ==, >, <, !=
+
+conditions:
+  # Example: mining_master
+  # mining_master:
+  #   display: "Mining Master"
+  #   type: COUNTER
+  #   key: "mining.mat.STONE"
+  #   operator: ">="
+  #   value: 10000
+  #
+  # Example: explorer
+  # explorer:
+  #   display: "Explorer"
+  #   type: SET_SIZE
+  #   key: "movement.biomes"
+  #   operator: ">="
+  #   value: 20
+  #
+  # Example: has_nether
+  # has_nether:
+  #   display: "Nether Visitor"
+  #   type: BOOLEAN
+  #   key: "dimension.nether"
+  #   operator: "=="
+  #   value: 1
+  #
+  # Example: set_contains
+  # visited_plains:
+  #   display: "Plains Visitor"
+  #   type: SET_CONTAINS
+  #   key: "movement.biomes"
+  #   operator: "=="
+  #   contains: "PLAINS"
