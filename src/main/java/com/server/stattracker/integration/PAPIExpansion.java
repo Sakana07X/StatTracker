@@ -8,6 +8,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PAPIExpansion extends PlaceholderExpansion {
@@ -93,64 +94,67 @@ public class PAPIExpansion extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, String params) {
         if (player == null) return null;
-
-        String lower = params.toLowerCase();
-
-        if ("playtime_hours".equals(lower)) {
-            return formatHours(api.getCounter(player.getUniqueId(), StatKeys.PLAYTIME_MS) / 3600000.0);
-        }
-        if ("playtime_days".equals(lower)) {
-            return formatHours(api.getCounter(player.getUniqueId(), StatKeys.PLAYTIME_MS) / 86400000.0);
-        }
-        if ("arrow_accuracy".equals(lower)) {
-            long shot = api.getCounter(player.getUniqueId(), StatKeys.ARROWS_SHOT);
-            long hits = api.getCounter(player.getUniqueId(), StatKeys.ARROW_HITS);
-            return shot > 0 ? String.format("%.1f", hits * 100.0 / shot) : "0.0";
-        }
-        if ("survival_hours".equals(lower)) {
-            long joinTime = api.getCounter(player.getUniqueId(), StatKeys.JOIN_TIME);
-            if (joinTime <= 0) return "0.0";
-            return formatHours((System.currentTimeMillis() - joinTime) / 3600000.0);
-        }
-        if ("longest_survival_hours".equals(lower)) {
-            return formatHours(api.getCounter(player.getUniqueId(), StatKeys.LONGEST_SURVIVAL_MS) / 3600000.0);
-        }
-
-        if (lower.startsWith("counter_")) {
-            return String.valueOf(api.getCounter(player.getUniqueId(), params.substring(8)));
-        }
-        if (lower.startsWith("set_")) {
-            return String.valueOf(api.getSetSize(player.getUniqueId(), params.substring(4)));
-        }
-        if (lower.startsWith("double_")) {
-            return String.valueOf((long) api.getDouble(player.getUniqueId(), params.substring(7)));
-        }
-        if (lower.startsWith("bool_")) {
-            return api.getBooleanFlag(player.getUniqueId(), params.substring(5)) ? "是" : "否";
-        }
-
-        String counterKey = COUNTER_KEYS.get(lower);
-        if (counterKey != null) {
-            return String.valueOf(api.getCounter(player.getUniqueId(), counterKey));
-        }
-
-        String doubleKey = DOUBLE_KEYS.get(lower);
-        if (doubleKey != null) {
-            return String.valueOf((long) api.getDouble(player.getUniqueId(), doubleKey));
-        }
-
-        String setKey = SET_KEYS.get(lower);
-        if (setKey != null) {
-            return String.valueOf(api.getSetSize(player.getUniqueId(), setKey));
-        }
-
-        return null;
+        return resolve(player.getUniqueId(), params);
     }
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
-        if (player == null || !player.isOnline()) return null;
-        return onPlaceholderRequest(player.getPlayer(), params);
+        if (player == null) return null;
+        return resolve(player.getUniqueId(), params);
+    }
+
+    private String resolve(UUID uuid, String params) {
+        String lower = params.toLowerCase();
+
+        if ("playtime_hours".equals(lower)) {
+            return formatHours(api.getCounter(uuid, StatKeys.PLAYTIME_MS) / 3600000.0);
+        }
+        if ("playtime_days".equals(lower)) {
+            return formatHours(api.getCounter(uuid, StatKeys.PLAYTIME_MS) / 86400000.0);
+        }
+        if ("arrow_accuracy".equals(lower)) {
+            long shot = api.getCounter(uuid, StatKeys.ARROWS_SHOT);
+            long hits = api.getCounter(uuid, StatKeys.ARROW_HITS);
+            return shot > 0 ? String.format("%.1f", hits * 100.0 / shot) : "0.0";
+        }
+        if ("survival_hours".equals(lower)) {
+            long joinTime = api.getCounter(uuid, StatKeys.JOIN_TIME);
+            if (joinTime <= 0) return "0.0";
+            return formatHours((System.currentTimeMillis() - joinTime) / 3600000.0);
+        }
+        if ("longest_survival_hours".equals(lower)) {
+            return formatHours(api.getCounter(uuid, StatKeys.LONGEST_SURVIVAL_MS) / 3600000.0);
+        }
+
+        if (lower.startsWith("counter_")) {
+            return String.valueOf(api.getCounter(uuid, params.substring(8)));
+        }
+        if (lower.startsWith("set_")) {
+            return String.valueOf(api.getSetSize(uuid, params.substring(4)));
+        }
+        if (lower.startsWith("double_")) {
+            return String.valueOf((long) api.getDouble(uuid, params.substring(7)));
+        }
+        if (lower.startsWith("bool_")) {
+            return api.getBooleanFlag(uuid, params.substring(5)) ? "是" : "否";
+        }
+
+        String counterKey = COUNTER_KEYS.get(lower);
+        if (counterKey != null) {
+            return String.valueOf(api.getCounter(uuid, counterKey));
+        }
+
+        String doubleKey = DOUBLE_KEYS.get(lower);
+        if (doubleKey != null) {
+            return String.valueOf((long) api.getDouble(uuid, doubleKey));
+        }
+
+        String setKey = SET_KEYS.get(lower);
+        if (setKey != null) {
+            return String.valueOf(api.getSetSize(uuid, setKey));
+        }
+
+        return null;
     }
 
     private String formatHours(double hours) {

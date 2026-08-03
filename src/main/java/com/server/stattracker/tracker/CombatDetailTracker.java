@@ -51,6 +51,7 @@ public class CombatDetailTracker implements Listener {
         if (lastDmg instanceof EntityDamageByEntityEvent dmgByEntity) {
             if (dmgByEntity.getDamager() instanceof Player killer) {
                 plugin.getDataManager().get(killer.getUniqueId()).increment(StatKeys.PLAYER_KILLS);
+                plugin.getDataManager().markDirty(killer.getUniqueId());
             }
         }
 

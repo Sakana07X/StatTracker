@@ -54,6 +54,7 @@ public class MovementTracker implements Listener {
 
     private final HashMap<UUID, PlayerMoveState> moveStates = new HashMap<>(64);
     private final HashSet<UUID> sprinting = new HashSet<>(16);
+    private final HashSet<UUID> movedPlayers = new HashSet<>(64);
 
     private static class PlayerMoveState {
         Location lastBiomeCheck;
@@ -78,6 +79,7 @@ public class MovementTracker implements Listener {
 
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
+        movedPlayers.add(uuid);
         PlayerTrackData data = plugin.getDataManager().get(uuid);
 
         double dx = to.getX() - from.getX();
@@ -163,6 +165,7 @@ public class MovementTracker implements Listener {
         UUID uuid = event.getPlayer().getUniqueId();
         moveStates.remove(uuid);
         sprinting.remove(uuid);
+        movedPlayers.remove(uuid);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -213,11 +216,11 @@ public class MovementTracker implements Listener {
     }
 
     public void flushDirty() {
+        if (movedPlayers.isEmpty()) return;
         DataManager dm = plugin.getDataManager();
-        for (UUID uuid : moveStates.keySet()) {
-            if (plugin.getServer().getPlayer(uuid) != null) {
-                dm.markDirty(uuid);
-            }
+        for (UUID uuid : movedPlayers) {
+            dm.markDirty(uuid);
         }
+        movedPlayers.clear();
     }
 }

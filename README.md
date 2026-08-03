@@ -21,8 +21,9 @@ Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.13+. Auto-dete
 ### Performance
 
 - Movement: distance accumulation only, biome check every 50 blocks, structure check every 30
-- Dirty data tracked per-player, flushed every 3 seconds
-- Plain HashMap, full save on shutdown
+- Only players who actually changed get marked dirty, flushed every 3 seconds, no full scans
+- Data kept in memory between saves, no repeated file reads
+- Thread-safe collections for async events, full save on shutdown
 
 ### Usage
 
@@ -95,8 +96,9 @@ Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.13 以上。启动时�
 ### 性能
 
 - 移动事件只做距离累加，群系检测每50格一次，结构检测每30格一次
-- 脏数据按玩家追踪，每3秒批量写入
-- 普通HashMap，关闭时全量保存
+- 只标记真正变化过的玩家，每3秒批量写入，不做全量扫描
+- 数据保存在内存中，保存时不再反复读文件
+- 并发安全集合，兼容异步事件，关闭时全量保存
 
 ### 使用
 

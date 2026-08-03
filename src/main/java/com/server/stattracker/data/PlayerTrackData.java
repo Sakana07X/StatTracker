@@ -1,12 +1,13 @@
 package com.server.stattracker.data;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerTrackData {
 
-    private final HashMap<String, Long>   counters = new HashMap<>(16);
-    private final HashMap<String, HashSet<String>> sets = new HashMap<>(8);
-    private final HashMap<String, Double> doubles  = new HashMap<>(8);
+    private final ConcurrentHashMap<String, Long>   counters = new ConcurrentHashMap<>(16);
+    private final ConcurrentHashMap<String, Set<String>> sets = new ConcurrentHashMap<>(8);
+    private final ConcurrentHashMap<String, Double> doubles  = new ConcurrentHashMap<>(8);
 
         transient volatile boolean dirty = false;
 
@@ -27,8 +28,8 @@ public class PlayerTrackData {
         counters.put(key, value);
     }
 
-    public HashSet<String> getSet(String key) {
-        return sets.computeIfAbsent(key, k -> new HashSet<>(4));
+    public Set<String> getSet(String key) {
+        return sets.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet());
     }
 
         public boolean addToSet(String key, String value) {
@@ -36,12 +37,12 @@ public class PlayerTrackData {
     }
 
     public int getSetSize(String key) {
-        HashSet<String> s = sets.get(key);
+        Set<String> s = sets.get(key);
         return s != null ? s.size() : 0;
     }
 
     public boolean setContains(String key, String value) {
-        HashSet<String> s = sets.get(key);
+        Set<String> s = sets.get(key);
         return s != null && s.contains(value);
     }
 
@@ -66,7 +67,7 @@ public class PlayerTrackData {
         counters.put(key, 1L);
     }
 
-    public HashMap<String, Long> getCountersMap()               { return counters; }
-    public HashMap<String, HashSet<String>> getSetsMap()        { return sets; }
-    public HashMap<String, Double> getDoublesMap()              { return doubles; }
+    public ConcurrentHashMap<String, Long> getCountersMap()     { return counters; }
+    public ConcurrentHashMap<String, Set<String>> getSetsMap()    { return sets; }
+    public ConcurrentHashMap<String, Double> getDoublesMap()    { return doubles; }
 }

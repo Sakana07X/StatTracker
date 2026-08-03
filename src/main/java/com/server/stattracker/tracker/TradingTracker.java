@@ -4,7 +4,6 @@ import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
 import org.bukkit.Material;
-import java.util.Collections;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -38,7 +37,7 @@ public class TradingTracker implements Listener {
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.TRADE_COUNT);
 
-        for (ItemStack ingredient : Collections.singletonList(recipe.getIngredients().get(0))) {
+        for (ItemStack ingredient : recipe.getIngredients()) {
             if (ingredient.getType() == Material.EMERALD) {
                 data.increment(StatKeys.EMERALDS_SPENT, ingredient.getAmount());
             }

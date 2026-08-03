@@ -18,7 +18,7 @@ public class DataManager {
 
     private final Set<UUID> dirtyPlayers = ConcurrentHashMap.newKeySet();
 
-    private volatile Map<UUID, PlayerTrackData> snapshot = Collections.emptyMap();
+    private JsonObject root = new JsonObject();
 
     public DataManager(JavaPlugin plugin, String fileName) {
         this.plugin = plugin;
@@ -28,8 +28,9 @@ public class DataManager {
     public void load() {
         if (!Files.exists(dataFile)) return;
         try (Reader reader = Files.newBufferedReader(dataFile, StandardCharsets.UTF_8)) {
-            JsonObject root = gson.fromJson(reader, JsonObject.class);
-            if (root == null) return;
+            JsonObject parsed = gson.fromJson(reader, JsonObject.class);
+            if (parsed == null) return;
+            root = parsed;
             for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
                 UUID uuid = UUID.fromString(entry.getKey());
                 PlayerTrackData data = deserializeData(entry.getValue().getAsJsonObject());
@@ -41,22 +42,20 @@ public class DataManager {
         }
     }
 
-        public void saveDirty() {
+    public void saveDirty() {
         if (dirtyPlayers.isEmpty()) return;
 
-        JsonObject root = loadExistingRoot();
-
         synchronized (cache) {
-            for (UUID uuid : dirtyPlayers) {
+            Set<UUID> toSave = new HashSet<>(dirtyPlayers);
+            for (UUID uuid : toSave) {
                 PlayerTrackData data = cache.get(uuid);
                 if (data != null) {
                     root.add(uuid.toString(), serializeData(data));
                     data.dirty = false;
                 }
             }
+            dirtyPlayers.removeAll(toSave);
         }
-
-        dirtyPlayers.clear();
 
         try {
             Files.createDirectories(dataFile.getParent());
@@ -67,31 +66,22 @@ public class DataManager {
         }
     }
 
-        public void saveAll() {
+    public void saveAll() {
         try {
             Files.createDirectories(dataFile.getParent());
-            JsonObject root = new JsonObject();
+            JsonObject newRoot = new JsonObject();
             synchronized (cache) {
                 for (Map.Entry<UUID, PlayerTrackData> entry : cache.entrySet()) {
-                    root.add(entry.getKey().toString(), serializeData(entry.getValue()));
+                    newRoot.add(entry.getKey().toString(), serializeData(entry.getValue()));
                     entry.getValue().dirty = false;
                 }
             }
+            root = newRoot;
             Files.writeString(dataFile, gson.toJson(root), StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             dirtyPlayers.clear();
         } catch (Exception e) {
             plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
-        }
-    }
-
-    private JsonObject loadExistingRoot() {
-        if (!Files.exists(dataFile)) return new JsonObject();
-        try (Reader reader = Files.newBufferedReader(dataFile, StandardCharsets.UTF_8)) {
-            JsonObject root = gson.fromJson(reader, JsonObject.class);
-            return root != null ? root : new JsonObject();
-        } catch (Exception e) {
-            return new JsonObject();
         }
     }
 
@@ -128,7 +118,7 @@ public class DataManager {
         obj.add("c", counters);
 
         JsonObject sets = new JsonObject();
-        for (Map.Entry<String, HashSet<String>> e : data.getSetsMap().entrySet()) {
+        for (Map.Entry<String, Set<String>> e : data.getSetsMap().entrySet()) {
             JsonArray arr = new JsonArray(e.getValue().size());
             for (String v : e.getValue()) arr.add(v);
             sets.add(e.getKey(), arr);

@@ -53,9 +53,12 @@ public class PlaytimeTracker implements Listener {
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.PLAYTIME_MS, elapsed);
 
-        long currentSurvival = now - data.getCounter(StatKeys.JOIN_TIME);
-        if (currentSurvival > data.getCounter(StatKeys.LONGEST_SURVIVAL_MS)) {
-            data.setCounter(StatKeys.LONGEST_SURVIVAL_MS, currentSurvival);
+        long joinTime = data.getCounter(StatKeys.JOIN_TIME);
+        if (joinTime > 0) {
+            long currentSurvival = now - joinTime;
+            if (currentSurvival > data.getCounter(StatKeys.LONGEST_SURVIVAL_MS)) {
+                data.setCounter(StatKeys.LONGEST_SURVIVAL_MS, currentSurvival);
+            }
         }
 
         loginTimes.put(player.getUniqueId(), now);
