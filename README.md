@@ -1,4 +1,4 @@
-﻿# StatTracker
+# StatTracker
 
 [English](#english) | [中文](#中文)
 
@@ -7,6 +7,8 @@
 ## English
 
 A lightweight Minecraft player behavior tracking plugin. Records what players do and exposes the data for other plugins to use. No game logic changes, no messages to players, just silent data collection.
+
+Can be used as a data source for achievement/title systems like CyuTitles — track player progress, read stats via PAPI placeholders or Java API, and let other plugins handle the logic.
 
 ### Compatibility
 
@@ -52,6 +54,8 @@ double walk = api.getDouble(player, StatKeys.WALK_DISTANCE);
 ## 中文
 
 一个 Minecraft 玩家行为追踪插件。记录玩家操作，把数据暴露给其他插件用。不改游戏逻辑，不发消息，只记数据。
+
+可以用作成就/称号系统的数据源，比如配合 CyuTitles —— 追踪玩家进度，通过 PAPI 占位符或 Java API 读取数据，条件判断交给其他插件处理。
 
 ### 兼容性
 
