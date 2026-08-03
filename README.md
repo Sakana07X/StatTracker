@@ -8,7 +8,7 @@
 
 A lightweight Minecraft player behavior tracking plugin. Records what players do and exposes the data for other plugins to use. No game logic changes, no messages to players, just silent data collection.
 
-Can be used as a data source for achievement/title systems like CyuTitles — track player progress, read stats via PAPI placeholders or Java API, and let other plugins handle the logic.
+Works as a data source for achievement/title systems like CyuTitles, anti-cheat checks, or anything that needs player stats. Read raw data through PAPI placeholders or the Java API, or define conditions in `conditions.yml` and let the plugin answer yes/no for you.
 
 ### Compatibility
 
@@ -82,7 +82,7 @@ boolean met = plugin.getConditionManager().isMet(player.getUniqueId(), "mining_m
 
 一个 Minecraft 玩家行为追踪插件。记录玩家操作，把数据暴露给其他插件用。不改游戏逻辑，不发消息，只记数据。
 
-可以用作成就/称号系统的数据源，比如配合 CyuTitles —— 追踪玩家进度，通过 PAPI 占位符或 Java API 读取数据，条件判断交给其他插件处理。
+可以用作成就/称号系统（比如 CyuTitles）、反作弊检测，或者任何需要玩家数据的功能的数据源。既能通过 PAPI 占位符或 Java API 读原始数据，也能在 `conditions.yml` 里定义条件，让插件直接给出是/否结果。
 
 ### 兼容性
 
