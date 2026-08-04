@@ -6,6 +6,9 @@
 # Operators: >=, <=, ==, >, <, !=
 # Optional field: permission - when the condition is met, the bridge grants
 # this permission (e.g. cyutitles.obtain.<title>), and revokes it when not met.
+# Optional field: revoke-command - run this console command when the condition
+# flips from met to not met (e.g. remove the granted title). Placeholders:
+# %player% (player name), %uuid% (player UUID).
 # Optional field: requires - combined condition, all sub items must pass (AND).
 # Each item is a condition id (string) or an inline stat check (map).
 
@@ -47,6 +50,7 @@ conditions:
   # jack_of_all:
   #   display: "Master of All"
   #   permission: "cyutitles.obtain.jack_of_all"
+  #   revoke-command: "cyutitles take %player% jack_of_all"
   #   requires:
   #     - "mining_master"
   #     - "explorer"

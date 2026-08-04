@@ -86,8 +86,27 @@ public class ConditionPermissionBridge implements Listener {
                 permBridge.revokePermission(uuid, c.permission);
                 plugin.getLogger().info("[" + player.getName() + "] 条件失效 " + id
                     + " -> 回收 " + c.permission);
+                executeRevokeCommand(player, c);
             }
         }
         lastState.put(uuid, now);
+    }
+
+    // 条件失效时执行配置的回收命令（如移除已授予的称号），支持 %player% / %uuid%
+    private void executeRevokeCommand(Player player, ConditionManager.Condition c) {
+        if (c.revokeCommand == null || c.revokeCommand.isEmpty()) return;
+
+        String name = player.getName();
+        if (!name.matches("[\\w]{1,16}")) {
+            plugin.getLogger().warning("拒绝执行回收命令: 非法玩家名 '" + name + "'");
+            return;
+        }
+
+        String cmd = c.revokeCommand
+            .replace("%player%", name)
+            .replace("%uuid%", player.getUniqueId().toString());
+
+        boolean ok = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        plugin.getLogger().info("[" + name + "] 执行回收命令: /" + cmd + " (成功=" + ok + ")");
     }
 }

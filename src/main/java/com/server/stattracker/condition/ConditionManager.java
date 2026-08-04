@@ -48,10 +48,12 @@ public class ConditionManager {
         public final double value;
         public final String contains;
         public final String permission;
+        public final String revokeCommand;
         public final List<SubRequirement> requires;
 
         Condition(String id, String display, Type type, String key, String operator,
-                  double value, String contains, String permission, List<SubRequirement> requires) {
+                  double value, String contains, String permission,
+                  String revokeCommand, List<SubRequirement> requires) {
             this.id = id;
             this.display = display;
             this.type = type;
@@ -60,6 +62,7 @@ public class ConditionManager {
             this.value = value;
             this.contains = contains;
             this.permission = permission;
+            this.revokeCommand = revokeCommand;
             this.requires = requires;
         }
     }
@@ -92,9 +95,11 @@ public class ConditionManager {
                 double val = cs.getDouble("value", 0);
                 String contains = cs.getString("contains", null);
                 String permission = cs.getString("permission", null);
+                String revokeCommand = cs.getString("revoke-command", null);
                 List<SubRequirement> requires = parseRequires(cs);
 
-                conditions.put(id, new Condition(id, display, type, key, op, val, contains, permission, requires));
+                conditions.put(id, new Condition(id, display, type, key, op, val,
+                    contains, permission, revokeCommand, requires));
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Skipped invalid condition '" + id + "': " + e.getMessage());
             }
