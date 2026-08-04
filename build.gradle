@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'maven-publish'
 }
 
 group = 'com.server'
@@ -34,23 +33,4 @@ tasks.withType(JavaCompile).configureEach {
 
 jar {
     archiveFileName = "StatTracker-${version}.jar"
-}
-
-publishing {
-    publications {
-        gpr(MavenPublication) {
-            from(components.java)
-            artifactId = 'StatTracker'
-        }
-    }
-    repositories {
-        maven {
-            name = 'GitHubPackages'
-            url = uri("https://maven.pkg.github.com/" + (System.getenv("GITHUB_REPOSITORY") ?: "Sakana07X/StatTracker"))
-            credentials {
-                username = System.getenv("USERNAME") ?: System.getenv("GITHUB_ACTOR")
-                password = System.getenv("TOKEN") ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
 }
