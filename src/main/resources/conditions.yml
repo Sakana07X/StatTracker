@@ -6,6 +6,8 @@
 # Operators: >=, <=, ==, >, <, !=
 # Optional field: permission - when the condition is met, the bridge grants
 # this permission (e.g. cyutitles.obtain.<title>), and revokes it when not met.
+# Optional field: requires - combined condition, all sub items must pass (AND).
+# Each item is a condition id (string) or an inline stat check (map).
 
 conditions:
   # Example: mining_master
@@ -40,3 +42,12 @@ conditions:
   #   key: "movement.biomes"
   #   operator: "=="
   #   contains: "PLAINS"
+  #
+  # Example: combined condition (requires)
+  # jack_of_all:
+  #   display: "Master of All"
+  #   permission: "cyutitles.obtain.jack_of_all"
+  #   requires:
+  #     - "mining_master"
+  #     - "explorer"
+  #     - {type: COUNTER, key: "fishing.caught", operator: ">=", value: 500}
