@@ -5,6 +5,12 @@ on:
     types: [created]
   push:
     branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach the JAR to (e.g. v1.2.1)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -23,7 +29,10 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
     - name: Upload JAR to Release
-      if: github.event_name == 'release'
-      run: gh release upload "${{ github.event.release.tag_name }}" build/libs/*.jar --clobber
+      if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      run: |
+        TAG="${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}"
+        if [ -z "$TAG" ]; then echo "no tag provided, skipping upload"; exit 0; fi
+        gh release upload "$TAG" build/libs/*.jar --clobber
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
