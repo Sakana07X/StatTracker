@@ -201,6 +201,14 @@ public class ConditionManager {
         return Collections.unmodifiableCollection(conditions.values());
     }
 
+    // 是否存在需要权限桥管理的条件（带 permission）
+    public boolean hasManagedConditions() {
+        for (Condition c : conditions.values()) {
+            if (c.permission != null && !c.permission.isEmpty()) return true;
+        }
+        return false;
+    }
+
     private boolean evaluate(Condition c, PlayerTrackData data, int depth) {
         if (depth > MAX_DEPTH) return false; // 循环引用保护
         if (c.requires != null && !c.requires.isEmpty()) {

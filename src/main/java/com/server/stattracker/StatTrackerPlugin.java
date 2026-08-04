@@ -84,6 +84,9 @@ public class StatTrackerPlugin extends JavaPlugin {
                 initConditionSystem();
             } else {
                 conditionManager.load();
+                if (conditionBridge == null && conditionManager.hasManagedConditions()) {
+                    initConditionBridge();
+                }
             }
             if (conditionBridge != null) conditionBridge.flush();
         }
@@ -106,7 +109,11 @@ public class StatTrackerPlugin extends JavaPlugin {
     private void initConditionSystem() {
         conditionManager = new ConditionManager(this);
         conditionManager.load();
-        initConditionBridge();
+        if (conditionManager.hasManagedConditions()) {
+            initConditionBridge();
+        } else {
+            getLogger().info("没有带 permission 的条件，条件权限桥未启用");
+        }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new ConditionPAPI(this, conditionManager).register();
         }
