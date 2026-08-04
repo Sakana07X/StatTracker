@@ -140,7 +140,11 @@ public class ConditionManager {
                 String op = mapGet(m, "operator");
                 if (op == null || op.isEmpty()) op = ">=";
                 String valueStr = mapGet(m, "value");
-                double value = valueStr != null ? Double.parseDouble(valueStr) : 0;
+                double value = 0;
+                if (t != Type.SET_CONTAINS) {
+                    if (valueStr == null) throw new IllegalArgumentException("requires entry missing value");
+                    value = Double.parseDouble(valueStr);
+                }
                 result.add(new SubRequirement(null, t, key, op, value, mapGet(m, "contains")));
             } else {
                 throw new IllegalArgumentException("requires entry must be a condition id or a map");
