@@ -37,6 +37,7 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
             case "reset" -> reset(sender, args);
             case "seed" -> seed(sender, args);
             case "save" -> save(sender);
+            case "integrations" -> integrations(sender);
             default -> sendHelp(sender);
         }
         return true;
@@ -46,7 +47,7 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             String prefix = args[0].toLowerCase();
-            return List.of("reload", "stats", "conditions", "reset", "seed", "save")
+            return List.of("reload", "stats", "conditions", "reset", "seed", "save", "integrations")
                 .stream().filter(s -> s.startsWith(prefix)).toList();
         }
         return List.of();
@@ -149,6 +150,18 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("数据已保存");
     }
 
+    private void integrations(CommandSender sender) {
+        sender.sendMessage("StatTracker 联动状态:");
+        sender.sendMessage("  PlaceholderAPI: " + present("PlaceholderAPI"));
+        sender.sendMessage("  LuckPerms: " + present("LuckPerms"));
+        sender.sendMessage("  Vault: " + present("Vault"));
+        sender.sendMessage("  CyuTitles: " + present("CyuTitles"));
+        sender.sendMessage("  TrChat: " + present("TrChat"));
+        sender.sendMessage("  PlayerTitle: " + present("PlayerTitle"));
+        sender.sendMessage("  条件权限桥: " + (plugin.getConditionBridge() != null ? "已启用" : "未启用"));
+        sender.sendMessage("  原版回填: " + (plugin.getVanillaSeeder() != null ? "已启用" : "未启用"));
+    }
+
     private void sendHelp(CommandSender sender) {
         sender.sendMessage("StatTracker 命令:");
         sender.sendMessage("  /stattracker reload - 重载配置与条件");
@@ -157,12 +170,17 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("  /stattracker reset <玩家> - 重置玩家数据");
         sender.sendMessage("  /stattracker seed <玩家> - 重新回填原版统计");
         sender.sendMessage("  /stattracker save - 立即保存数据");
+        sender.sendMessage("  /stattracker integrations - 查看联动插件状态");
     }
 
     private UUID resolveUuid(String name) {
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) return online.getUniqueId();
-        OfflinePlayer offline = Bukkit.getOfflinePlayerIfCached(name);
+        OfflinePlayer offline = Bukkit.getOfflinePlayer(name);
         return offline != null ? offline.getUniqueId() : null;
+    }
+
+    private String present(String name) {
+        return plugin.getServer().getPluginManager().getPlugin(name) != null ? "已安装" : "未安装";
     }
 }
