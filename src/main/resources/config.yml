@@ -5,3 +5,8 @@ conditions:
   # When enabled: %statcond_xxx% placeholders and Java API are available
   # When disabled: only raw stat data is accessible
   enabled: true
+
+# Seed tracked counters from vanilla statistics on a player's first join,
+# so conditions align with vanilla-stat-based titles (one-time backfill)
+seed:
+  vanilla_stats: true

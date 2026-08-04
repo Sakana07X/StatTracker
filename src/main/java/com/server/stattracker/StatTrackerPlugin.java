@@ -94,6 +94,9 @@ public class StatTrackerPlugin extends JavaPlugin {
     private void registerTrackers() {
         var pm = getServer().getPluginManager();
 
+        if (getConfig().getBoolean("seed.vanilla_stats", true)) {
+            register(pm, new VanillaSeeder(this));
+        }
         movementTracker = new MovementTracker(this);
         playtimeTracker = new PlaytimeTracker(this);
 
