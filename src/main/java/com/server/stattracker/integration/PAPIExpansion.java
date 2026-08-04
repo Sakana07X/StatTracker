@@ -61,6 +61,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
         COUNTER_KEYS.put("drop_count",          StatKeys.DROP_COUNT);
         COUNTER_KEYS.put("chat_messages",        StatKeys.CHAT_MESSAGES);
         COUNTER_KEYS.put("diamond_pickups",     StatKeys.DIAMOND_PICKUPS);
+        COUNTER_KEYS.put("void_pickups",        StatKeys.VOID_PICKUPS);
         COUNTER_KEYS.put("arrows_shot",         StatKeys.ARROWS_SHOT);
         COUNTER_KEYS.put("arrow_hits",          StatKeys.ARROW_HITS);
         COUNTER_KEYS.put("ocean_ticks",         StatKeys.OCEAN_BIOME_TICKS);

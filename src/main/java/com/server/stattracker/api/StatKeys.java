@@ -109,6 +109,8 @@ public final class StatKeys {
     public static final String DROP_COUNT            = "item.drop_count";
     public static final String PICKUP_PREFIX         = "item.pickup.";
     public static final String DIAMOND_PICKUPS       = "item.pickup.DIAMOND";
+    public static final String VOID_PICKUPS          = "item.void_pickups";
+    public static final String VOID_PICKUP_PREFIX    = "item.void_pickup.";
     // Interaction
     public static final String DOORS_OPENED          = "interact.doors";
     public static final String BUTTONS_PRESSED       = "interact.buttons";
