@@ -5,8 +5,11 @@ import com.server.stattracker.compat.ServerScheduler;
 import com.server.stattracker.condition.ConditionManager;
 import com.server.stattracker.condition.ConditionPAPI;
 import com.server.stattracker.data.DataManager;
+import com.server.stattracker.integration.ConditionPermissionBridge;
 import com.server.stattracker.integration.LuckPermsBridge;
 import com.server.stattracker.integration.PAPIExpansion;
+import com.server.stattracker.integration.PermissionBridge;
+import com.server.stattracker.integration.VaultPermissionBridge;
 import com.server.stattracker.tracker.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +22,7 @@ public class StatTrackerPlugin extends JavaPlugin {
     private MovementTracker movementTracker;
     private PlaytimeTracker playtimeTracker;
     private ConditionManager conditionManager;
+    private ConditionPermissionBridge conditionBridge;
     
     @Override
     public void onEnable() {
@@ -35,6 +39,7 @@ public class StatTrackerPlugin extends JavaPlugin {
         if (conditionsEnabled) {
             conditionManager = new ConditionManager(this);
             conditionManager.load();
+            initConditionBridge();
         }
 
         registerTrackers();
@@ -68,8 +73,23 @@ public class StatTrackerPlugin extends JavaPlugin {
     public DataManager getDataManager()        { return dataManager; }
     public StatProvider getAPI()                { return statProvider; }
     public ConditionManager getConditionManager()  { return conditionManager; }
+    public ConditionPermissionBridge getConditionBridge() { return conditionBridge; }
     public LuckPermsBridge getLuckPermsBridge() { return luckPermsBridge; }
     public ServerScheduler getScheduler()       { return scheduler; }
+
+    private void initConditionBridge() {
+        PermissionBridge permBridge = luckPermsBridge.isAvailable()
+            ? luckPermsBridge
+            : new VaultPermissionBridge(this);
+        if (!permBridge.isAvailable()) {
+            getLogger().warning("没有可用的权限后端，条件权限桥未启用");
+            return;
+        }
+        conditionBridge = new ConditionPermissionBridge(this, conditionManager, permBridge);
+        getServer().getPluginManager().registerEvents(conditionBridge, this);
+        scheduler.runAtFixedRate(600, 600, () -> conditionBridge.flush());
+        getLogger().info("ConditionPermissionBridge enabled - 权限后端: " + permBridge.getName());
+    }
 
     private void registerTrackers() {
         var pm = getServer().getPluginManager();

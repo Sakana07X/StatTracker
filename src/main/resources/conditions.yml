@@ -4,6 +4,8 @@
 #
 # Supported types: COUNTER, DOUBLE, SET_SIZE, SET_CONTAINS, BOOLEAN
 # Operators: >=, <=, ==, >, <, !=
+# Optional field: permission - when the condition is met, the bridge grants
+# this permission (e.g. cyutitles.obtain.<title>), and revokes it when not met.
 
 conditions:
   # Example: mining_master
@@ -13,6 +15,7 @@ conditions:
   #   key: "mining.mat.STONE"
   #   operator: ">="
   #   value: 10000
+  #   permission: "cyutitles.obtain.mining_master"
   #
   # Example: explorer
   # explorer:

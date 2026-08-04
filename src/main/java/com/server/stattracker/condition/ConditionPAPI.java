@@ -59,14 +59,6 @@ public class ConditionPAPI extends PlaceholderExpansion {
             return c != null ? c.display : null;
         }
 
-        // %statcond_num_<id>% -> 1/0（供只支持数值比较的插件，如 CyuTitles）
-        if (lower.startsWith("num_")) {
-            String id = lower.substring(4);
-            if (cm.getCondition(id) != null) {
-                return cm.isMet(uuid, id) ? "1" : "0";
-            }
-        }
-
         // %statcond_xxx% -> true/false
         if (cm.getCondition(lower) != null) {
             return cm.isMet(uuid, lower) ? "true" : "false";

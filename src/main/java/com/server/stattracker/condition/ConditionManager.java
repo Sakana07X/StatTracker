@@ -26,8 +26,10 @@ public class ConditionManager {
         public final String operator;
         public final double value;
         public final String contains;
+        public final String permission;
 
-        Condition(String id, String display, Type type, String key, String operator, double value, String contains) {
+        Condition(String id, String display, Type type, String key, String operator,
+                  double value, String contains, String permission) {
             this.id = id;
             this.display = display;
             this.type = type;
@@ -35,6 +37,7 @@ public class ConditionManager {
             this.operator = operator;
             this.value = value;
             this.contains = contains;
+            this.permission = permission;
         }
     }
 
@@ -65,8 +68,9 @@ public class ConditionManager {
                 String op = cs.getString("operator", ">=");
                 double val = cs.getDouble("value", 0);
                 String contains = cs.getString("contains", null);
+                String permission = cs.getString("permission", null);
 
-                conditions.put(id, new Condition(id, display, type, key, op, val, contains));
+                conditions.put(id, new Condition(id, display, type, key, op, val, contains, permission));
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Skipped invalid condition '" + id + "': " + e.getMessage());
             }
