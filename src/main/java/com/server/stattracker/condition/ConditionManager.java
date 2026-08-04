@@ -14,6 +14,7 @@ public class ConditionManager {
     private final StatTrackerPlugin plugin;
     private final File configFile;
     private final Map<String, Condition> conditions = new LinkedHashMap<>();
+    private static final PlayerTrackData EMPTY = new PlayerTrackData();
 
     public enum Type { COUNTER, DOUBLE, SET_SIZE, SET_CONTAINS, BOOLEAN }
 
@@ -76,20 +77,25 @@ public class ConditionManager {
     public boolean isMet(UUID uuid, String conditionId) {
         Condition c = conditions.get(conditionId);
         if (c == null) return false;
-        return evaluate(c, plugin.getDataManager().get(uuid));
+        return evaluate(c, dataOf(uuid));
     }
 
     public boolean isMet(UUID uuid, Condition c) {
-        return evaluate(c, plugin.getDataManager().get(uuid));
+        return evaluate(c, dataOf(uuid));
     }
 
     public Map<String, Boolean> checkAll(UUID uuid) {
-        PlayerTrackData data = plugin.getDataManager().get(uuid);
+        PlayerTrackData data = dataOf(uuid);
         Map<String, Boolean> result = new LinkedHashMap<>();
         for (var entry : conditions.entrySet()) {
             result.put(entry.getKey(), evaluate(entry.getValue(), data));
         }
         return result;
+    }
+
+    private PlayerTrackData dataOf(UUID uuid) {
+        PlayerTrackData data = plugin.getDataManager().getIfPresent(uuid);
+        return data != null ? data : EMPTY;
     }
 
     public Condition getCondition(String id) {

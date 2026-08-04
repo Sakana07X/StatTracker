@@ -7,18 +7,23 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class DataManager {
 
     private final JavaPlugin plugin;
     private final Path dataFile;
-    private final HashMap<UUID, PlayerTrackData> cache = new HashMap<>(64);
+    private final ConcurrentHashMap<UUID, PlayerTrackData> cache = new ConcurrentHashMap<>(64);
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private final Set<UUID> dirtyPlayers = ConcurrentHashMap.newKeySet();
 
     private JsonObject root = new JsonObject();
+    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "StatTracker-IO");
+        t.setDaemon(true);
+        return t;
+    });
 
     public DataManager(JavaPlugin plugin, String fileName) {
         this.plugin = plugin;
@@ -45,67 +50,84 @@ public class DataManager {
     public void saveDirty() {
         if (dirtyPlayers.isEmpty()) return;
 
-        synchronized (cache) {
-            Set<UUID> toSave = new HashSet<>(dirtyPlayers);
-            for (UUID uuid : toSave) {
-                PlayerTrackData data = cache.get(uuid);
-                if (data != null) {
-                    root.add(uuid.toString(), serializeData(data));
-                    data.dirty = false;
+        Set<UUID> toSave = new HashSet<>(dirtyPlayers);
+        for (UUID uuid : toSave) {
+            PlayerTrackData data = cache.get(uuid);
+            if (data != null) {
+                data.dirty = false;
+                root.add(uuid.toString(), serializeData(data));
+                if (data.dirty) {
+                    dirtyPlayers.add(uuid);
+                } else {
+                    dirtyPlayers.remove(uuid);
                 }
+            } else {
+                dirtyPlayers.remove(uuid);
             }
-            dirtyPlayers.removeAll(toSave);
         }
 
-        try {
-            Files.createDirectories(dataFile.getParent());
-            Files.writeString(dataFile, gson.toJson(root), StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (Exception e) {
-            plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
-        }
+        writeAsync(gson.toJson(root));
     }
 
     public void saveAll() {
         try {
-            Files.createDirectories(dataFile.getParent());
             JsonObject newRoot = new JsonObject();
-            synchronized (cache) {
-                for (Map.Entry<UUID, PlayerTrackData> entry : cache.entrySet()) {
-                    newRoot.add(entry.getKey().toString(), serializeData(entry.getValue()));
-                    entry.getValue().dirty = false;
+            for (Map.Entry<UUID, PlayerTrackData> entry : cache.entrySet()) {
+                PlayerTrackData data = entry.getValue();
+                data.dirty = false;
+                newRoot.add(entry.getKey().toString(), serializeData(data));
+                if (data.dirty) {
+                    dirtyPlayers.add(entry.getKey());
+                } else {
+                    dirtyPlayers.remove(entry.getKey());
                 }
             }
             root = newRoot;
-            Files.writeString(dataFile, gson.toJson(root), StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            dirtyPlayers.clear();
+            writeAsync(gson.toJson(root));
         } catch (Exception e) {
             plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
         }
     }
 
     public PlayerTrackData get(UUID uuid) {
-        synchronized (cache) {
-            return cache.computeIfAbsent(uuid, k -> new PlayerTrackData());
-        }
+        return cache.computeIfAbsent(uuid, k -> new PlayerTrackData());
     }
 
     public boolean hasData(UUID uuid) {
-        synchronized (cache) {
-            return cache.containsKey(uuid);
-        }
+        return cache.containsKey(uuid);
     }
 
-        public void markDirty(UUID uuid) {
-        PlayerTrackData data;
-        synchronized (cache) {
-            data = cache.get(uuid);
-        }
+    public PlayerTrackData getIfPresent(UUID uuid) {
+        return cache.get(uuid);
+    }
+
+    public void markDirty(UUID uuid) {
+        PlayerTrackData data = cache.get(uuid);
         if (data != null && !data.dirty) {
             data.dirty = true;
             dirtyPlayers.add(uuid);
         }
+    }
+
+    public void shutdown() {
+        ioExecutor.shutdown();
+        try {
+            ioExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void writeAsync(String json) {
+        ioExecutor.execute(() -> {
+            try {
+                Files.createDirectories(dataFile.getParent());
+                Files.writeString(dataFile, json, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (Exception e) {
+                plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
+            }
+        });
     }
 
     private JsonObject serializeData(PlayerTrackData data) {

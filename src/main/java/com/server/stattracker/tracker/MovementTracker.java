@@ -163,9 +163,11 @@ public class MovementTracker implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
+        if (movedPlayers.remove(uuid)) {
+            plugin.getDataManager().markDirty(uuid);
+        }
         moveStates.remove(uuid);
         sprinting.remove(uuid);
-        movedPlayers.remove(uuid);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

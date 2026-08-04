@@ -59,7 +59,10 @@ public class StatTrackerPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (dataManager != null) dataManager.saveAll();
+        if (dataManager != null) {
+            dataManager.saveAll();
+            dataManager.shutdown();
+        }
     }
 
     public DataManager getDataManager()        { return dataManager; }

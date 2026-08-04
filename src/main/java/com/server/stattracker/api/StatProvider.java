@@ -15,39 +15,48 @@ public class StatProvider {
     }
 
     public long getCounter(Player player, String key) {
-        return dataManager.get(player.getUniqueId()).getCounter(key);
+        return getCounter(player.getUniqueId(), key);
     }
 
     public long getCounter(UUID uuid, String key) {
-        return dataManager.get(uuid).getCounter(key);
+        PlayerTrackData data = dataManager.getIfPresent(uuid);
+        return data != null ? data.getCounter(key) : 0L;
     }
 
     public int getSetSize(Player player, String key) {
-        return dataManager.get(player.getUniqueId()).getSetSize(key);
+        return getSetSize(player.getUniqueId(), key);
     }
 
     public int getSetSize(UUID uuid, String key) {
-        return dataManager.get(uuid).getSetSize(key);
+        PlayerTrackData data = dataManager.getIfPresent(uuid);
+        return data != null ? data.getSetSize(key) : 0;
     }
 
     public boolean setContains(Player player, String key, String value) {
-        return dataManager.get(player.getUniqueId()).setContains(key, value);
+        return setContains(player.getUniqueId(), key, value);
+    }
+
+    public boolean setContains(UUID uuid, String key, String value) {
+        PlayerTrackData data = dataManager.getIfPresent(uuid);
+        return data != null && data.setContains(key, value);
     }
 
     public double getDouble(Player player, String key) {
-        return dataManager.get(player.getUniqueId()).getDouble(key);
+        return getDouble(player.getUniqueId(), key);
     }
 
     public double getDouble(UUID uuid, String key) {
-        return dataManager.get(uuid).getDouble(key);
+        PlayerTrackData data = dataManager.getIfPresent(uuid);
+        return data != null ? data.getDouble(key) : 0.0;
     }
 
     public boolean getBooleanFlag(Player player, String key) {
-        return dataManager.get(player.getUniqueId()).getBooleanFlag(key);
+        return getBooleanFlag(player.getUniqueId(), key);
     }
 
     public boolean getBooleanFlag(UUID uuid, String key) {
-        return dataManager.get(uuid).getBooleanFlag(key);
+        PlayerTrackData data = dataManager.getIfPresent(uuid);
+        return data != null && data.getBooleanFlag(key);
     }
 
     public PlayerTrackData getRawData(Player player) {
