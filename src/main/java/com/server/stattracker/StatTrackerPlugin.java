@@ -11,9 +11,12 @@ import com.server.stattracker.integration.PAPIExpansion;
 import com.server.stattracker.integration.PermissionBridge;
 import com.server.stattracker.integration.VaultPermissionBridge;
 import com.server.stattracker.tracker.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class StatTrackerPlugin extends JavaPlugin {
+public class StatTrackerPlugin extends JavaPlugin implements CommandExecutor {
 
     private DataManager dataManager;
     private StatProvider statProvider;
@@ -35,11 +38,8 @@ public class StatTrackerPlugin extends JavaPlugin {
         statProvider = new StatProvider(dataManager);
         luckPermsBridge = new LuckPermsBridge(this);
 
-        boolean conditionsEnabled = getConfig().getBoolean("conditions.enabled", true);
-        if (conditionsEnabled) {
-            conditionManager = new ConditionManager(this);
-            conditionManager.load();
-            initConditionBridge();
+        if (getConfig().getBoolean("conditions.enabled", true)) {
+            initConditionSystem();
         }
 
         registerTrackers();
@@ -52,14 +52,13 @@ public class StatTrackerPlugin extends JavaPlugin {
         }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PAPIExpansion(this).register();
-            if (conditionManager != null) {
-                new ConditionPAPI(this, conditionManager).register();
-            }
         }
 
         getLogger().info("StatTracker enabled - 27 trackers, "
             + (scheduler.isFolia() ? "Folia" : "Bukkit/Spigot/Paper") + " mode"
-            + (conditionsEnabled ? ", conditions ON" : ", conditions OFF"));
+            + (conditionManager != null ? ", conditions ON" : ", conditions OFF"));
+
+        getCommand("stattracker").setExecutor(this);
     }
 
     @Override
@@ -89,6 +88,35 @@ public class StatTrackerPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(conditionBridge, this);
         scheduler.runAtFixedRate(600, 600, () -> conditionBridge.flush());
         getLogger().info("ConditionPermissionBridge enabled - 权限后端: " + permBridge.getName());
+    }
+
+    private void initConditionSystem() {
+        conditionManager = new ConditionManager(this);
+        conditionManager.load();
+        initConditionBridge();
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new ConditionPAPI(this, conditionManager).register();
+        }
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+            reloadConfig();
+            if (getConfig().getBoolean("conditions.enabled", true)) {
+                if (conditionManager == null) {
+                    initConditionSystem();
+                } else {
+                    conditionManager.load();
+                }
+                if (conditionBridge != null) conditionBridge.flush();
+            }
+            int count = conditionManager != null ? conditionManager.getAllConditions().size() : 0;
+            sender.sendMessage("StatTracker 已重载: " + count + " 个条件");
+            return true;
+        }
+        sender.sendMessage("用法: /stattracker reload");
+        return true;
     }
 
     private void registerTrackers() {

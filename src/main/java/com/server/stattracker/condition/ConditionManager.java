@@ -13,7 +13,7 @@ public class ConditionManager {
 
     private final StatTrackerPlugin plugin;
     private final File configFile;
-    private final Map<String, Condition> conditions = new LinkedHashMap<>();
+    private final Map<String, Condition> conditions = new ConcurrentHashMap<>();
     private static final PlayerTrackData EMPTY = new PlayerTrackData();
     private static final int MAX_DEPTH = 16;
 
