@@ -31,7 +31,10 @@ public class VanillaSeeder implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (plugin.getDataManager().hasData(player.getUniqueId())) return;
+        seed(player);
+    }
 
+    public void seed(Player player) {
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         boolean updated = false;
 

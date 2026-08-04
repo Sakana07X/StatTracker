@@ -1,5 +1,5 @@
 name: StatTracker
-version: 1.2.1
+version: 1.2.2
 main: com.server.stattracker.StatTrackerPlugin
 api-version: 1.13
 folia-supported: true
@@ -10,11 +10,11 @@ description: 轻量级高性能玩家行为追踪框架 — 兼容 Bukkit/Spigot
 commands:
   stattracker:
     description: StatTracker 命令
-    usage: /stattracker reload
-    permission: stattracker.reload
+    usage: /stattracker <子命令>
+    permission: stattracker.admin
     aliases: [st]
 
 permissions:
-  stattracker.reload:
-    description: 重载 StatTracker 配置与条件
+  stattracker.admin:
+    description: StatTracker 管理命令
     default: op

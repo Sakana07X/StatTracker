@@ -114,6 +114,15 @@ public class DataManager {
         }
     }
 
+    public void reset(UUID uuid) {
+        cache.remove(uuid);
+        dirtyPlayers.remove(uuid);
+        ioExecutor.execute(() -> {
+            root.remove(uuid.toString());
+            writeJson(gson.toJson(root));
+        });
+    }
+
     public void shutdown() {
         ioExecutor.shutdown();
         try {

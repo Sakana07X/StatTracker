@@ -11,12 +11,9 @@ import com.server.stattracker.integration.PAPIExpansion;
 import com.server.stattracker.integration.PermissionBridge;
 import com.server.stattracker.integration.VaultPermissionBridge;
 import com.server.stattracker.tracker.*;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class StatTrackerPlugin extends JavaPlugin implements CommandExecutor {
+public class StatTrackerPlugin extends JavaPlugin {
 
     private DataManager dataManager;
     private StatProvider statProvider;
@@ -26,6 +23,7 @@ public class StatTrackerPlugin extends JavaPlugin implements CommandExecutor {
     private PlaytimeTracker playtimeTracker;
     private ConditionManager conditionManager;
     private ConditionPermissionBridge conditionBridge;
+    private VanillaSeeder vanillaSeeder;
     
     @Override
     public void onEnable() {
@@ -58,7 +56,9 @@ public class StatTrackerPlugin extends JavaPlugin implements CommandExecutor {
             + (scheduler.isFolia() ? "Folia" : "Bukkit/Spigot/Paper") + " mode"
             + (conditionManager != null ? ", conditions ON" : ", conditions OFF"));
 
-        getCommand("stattracker").setExecutor(this);
+        StatTrackerCommand command = new StatTrackerCommand(this);
+        getCommand("stattracker").setExecutor(command);
+        getCommand("stattracker").setTabCompleter(command);
     }
 
     @Override
@@ -73,8 +73,21 @@ public class StatTrackerPlugin extends JavaPlugin implements CommandExecutor {
     public StatProvider getAPI()                { return statProvider; }
     public ConditionManager getConditionManager()  { return conditionManager; }
     public ConditionPermissionBridge getConditionBridge() { return conditionBridge; }
+    public VanillaSeeder getVanillaSeeder()         { return vanillaSeeder; }
     public LuckPermsBridge getLuckPermsBridge() { return luckPermsBridge; }
     public ServerScheduler getScheduler()       { return scheduler; }
+
+    public void reloadPlugin() {
+        reloadConfig();
+        if (getConfig().getBoolean("conditions.enabled", true)) {
+            if (conditionManager == null) {
+                initConditionSystem();
+            } else {
+                conditionManager.load();
+            }
+            if (conditionBridge != null) conditionBridge.flush();
+        }
+    }
 
     private void initConditionBridge() {
         PermissionBridge permBridge = luckPermsBridge.isAvailable()
@@ -99,31 +112,12 @@ public class StatTrackerPlugin extends JavaPlugin implements CommandExecutor {
         }
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-            reloadConfig();
-            if (getConfig().getBoolean("conditions.enabled", true)) {
-                if (conditionManager == null) {
-                    initConditionSystem();
-                } else {
-                    conditionManager.load();
-                }
-                if (conditionBridge != null) conditionBridge.flush();
-            }
-            int count = conditionManager != null ? conditionManager.getAllConditions().size() : 0;
-            sender.sendMessage("StatTracker 已重载: " + count + " 个条件");
-            return true;
-        }
-        sender.sendMessage("用法: /stattracker reload");
-        return true;
-    }
-
     private void registerTrackers() {
         var pm = getServer().getPluginManager();
 
         if (getConfig().getBoolean("seed.vanilla_stats", true)) {
-            register(pm, new VanillaSeeder(this));
+            vanillaSeeder = new VanillaSeeder(this);
+            register(pm, vanillaSeeder);
         }
         movementTracker = new MovementTracker(this);
         playtimeTracker = new PlaytimeTracker(this);
