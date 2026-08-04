@@ -48,6 +48,8 @@ public class ContainerTracker implements Listener {
         RUIN_STRUCTURES.put("JUNGLE_PYRAMID", Structure.JUNGLE_PYRAMID);
 
         COLLECTOR_STRUCTURES.putAll(TREASURE_STRUCTURES);
+        COLLECTOR_STRUCTURES.putAll(OCEAN_STRUCTURES);
+        COLLECTOR_STRUCTURES.putAll(RUIN_STRUCTURES);
     }
 
     private final HashMap<UUID, CacheEntry> detectCache = new HashMap<>(32);

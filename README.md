@@ -16,7 +16,7 @@ Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.13+. Auto-dete
 
 ### What It Tracks
 
-27 trackers: mining, placing, crafting, smelting, combat (damage types + death coords), fishing (fish/treasure/junk), brewing, enchanting, trading (emerald stats), movement (walk/sprint/swim/elytra/boat/mount/jumps), biome discovery, dimension changes, portals, farming, redstone, maps, XP, advancements, chat, playtime, survival time, structure exploration (12 types), item pickup/drop, projectile accuracy, taming, breeding, consumables.
+27 trackers: mining, placing, crafting, smelting, combat (damage types + death coords), fishing (fish/treasure/junk), brewing, enchanting, trading (emerald stats), movement (walk/sprint/swim/elytra/boat/mount/jumps), biome discovery, dimension changes, portals, farming, redstone, maps, XP, advancements, chat, playtime, survival time, structure exploration (11 treasure structure types), item pickup/drop, projectile accuracy, taming, breeding, consumables.
 
 ### Performance
 
@@ -91,7 +91,7 @@ Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.13 以上。启动时�
 
 ### 追踪内容
 
-27 个追踪器：挖掘、放置、合成、熔炼、战斗（伤害类型+死亡坐标）、钓鱼（鱼/宝物/垃圾）、酿造、附魔、交易（绿宝石统计）、移动（步行/疾跑/游泳/鞘翅/船/骑乘/跳跃）、群系发现、维度切换、传送门、耕种、红石、地图、经验、进度、聊天、在线时长、存活时长、结构探索（12种）、物品拾取/丢弃、弹射物命中率、驯服、繁殖、消耗品。
+27 个追踪器：挖掘、放置、合成、熔炼、战斗（伤害类型+死亡坐标）、钓鱼（鱼/宝物/垃圾）、酿造、附魔、交易（绿宝石统计）、移动（步行/疾跑/游泳/鞘翅/船/骑乘/跳跃）、群系发现、维度切换、传送门、耕种、红石、地图、经验、进度、聊天、在线时长、存活时长、结构探索（11种宝藏结构）、物品拾取/丢弃、弹射物命中率、驯服、繁殖、消耗品。
 
 ### 性能
 
