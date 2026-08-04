@@ -10,11 +10,11 @@ public final class ServerScheduler {
     private final JavaPlugin plugin;
     private final boolean folia;
 
-        private Object globalScheduler;
+    private Object globalScheduler;
 
-        public boolean isFolia() { return folia; }
+    public boolean isFolia() { return folia; }
 
-public ServerScheduler(JavaPlugin plugin) {
+    public ServerScheduler(JavaPlugin plugin) {
         this.plugin = plugin;
         this.folia = detectFolia();
         if (folia) {
@@ -28,7 +28,7 @@ public ServerScheduler(JavaPlugin plugin) {
         plugin.getLogger().info("调度器: " + (folia ? "Folia GlobalRegionScheduler" : "BukkitScheduler"));
     }
 
-        public void runDelayed(long delayTicks, Runnable task) {
+    public void runDelayed(long delayTicks, Runnable task) {
         if (folia) {
             runFoliaDelayed(delayTicks, task);
         } else {
@@ -36,25 +36,12 @@ public ServerScheduler(JavaPlugin plugin) {
         }
     }
 
-        public Object runAtFixedRate(long initialDelayTicks, long periodTicks, Runnable task) {
+    public Object runAtFixedRate(long initialDelayTicks, long periodTicks, Runnable task) {
         if (folia) {
             return runFoliaFixedRate(initialDelayTicks, periodTicks, task);
         } else {
             return plugin.getServer().getScheduler().runTaskTimer(plugin, task,
                 initialDelayTicks, periodTicks);
-        }
-    }
-
-        public void cancel(Object taskHandle) {
-        if (taskHandle == null) return;
-        if (folia) {
-            try {
-                taskHandle.getClass().getMethod("cancel").invoke(taskHandle);
-            } catch (Exception ignored) {}
-        } else {
-            if (taskHandle instanceof org.bukkit.scheduler.BukkitTask bukkitTask) {
-                bukkitTask.cancel();
-            }
         }
     }
 

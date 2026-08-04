@@ -9,14 +9,14 @@ public class PlayerTrackData {
     private final ConcurrentHashMap<String, Set<String>> sets = new ConcurrentHashMap<>(8);
     private final ConcurrentHashMap<String, Double> doubles  = new ConcurrentHashMap<>(8);
 
-        transient volatile boolean dirty = false;
+    transient volatile boolean dirty = false;
 
     public long getCounter(String key) {
         Long val = counters.get(key);
         return val != null ? val : 0L;
     }
 
-        public long increment(String key) {
+    public long increment(String key) {
         return counters.merge(key, 1L, Long::sum);
     }
 
@@ -28,11 +28,11 @@ public class PlayerTrackData {
         counters.put(key, value);
     }
 
-    public Set<String> getSet(String key) {
+    private Set<String> getSet(String key) {
         return sets.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet());
     }
 
-        public boolean addToSet(String key, String value) {
+    public boolean addToSet(String key, String value) {
         return getSet(key).add(value);
     }
 

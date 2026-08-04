@@ -34,7 +34,7 @@ public class PlaytimeTracker implements Listener {
         loginTimes.remove(event.getPlayer().getUniqueId());
     }
 
-        public void flushAll() {
+    public void flushAll() {
         for (var entry : loginTimes.entrySet()) {
             Player player = plugin.getServer().getPlayer(entry.getKey());
             if (player != null && player.isOnline()) {
