@@ -49,7 +49,10 @@ public class DataManager {
 
     public void saveDirty() {
         if (dirtyPlayers.isEmpty()) return;
+        ioExecutor.execute(this::saveDirtyTask);
+    }
 
+    private void saveDirtyTask() {
         Set<UUID> toSave = new HashSet<>(dirtyPlayers);
         for (UUID uuid : toSave) {
             PlayerTrackData data = cache.get(uuid);
@@ -66,27 +69,29 @@ public class DataManager {
             }
         }
 
-        writeAsync(gson.toJson(root));
+        writeJson(gson.toJson(root));
     }
 
     public void saveAll() {
-        try {
-            JsonObject newRoot = new JsonObject();
-            for (Map.Entry<UUID, PlayerTrackData> entry : cache.entrySet()) {
-                PlayerTrackData data = entry.getValue();
-                data.dirty = false;
-                newRoot.add(entry.getKey().toString(), serializeData(data));
-                if (data.dirty) {
-                    dirtyPlayers.add(entry.getKey());
-                } else {
-                    dirtyPlayers.remove(entry.getKey());
+        ioExecutor.execute(() -> {
+            try {
+                JsonObject newRoot = new JsonObject();
+                for (Map.Entry<UUID, PlayerTrackData> entry : cache.entrySet()) {
+                    PlayerTrackData data = entry.getValue();
+                    data.dirty = false;
+                    newRoot.add(entry.getKey().toString(), serializeData(data));
+                    if (data.dirty) {
+                        dirtyPlayers.add(entry.getKey());
+                    } else {
+                        dirtyPlayers.remove(entry.getKey());
+                    }
                 }
+                root = newRoot;
+                writeJson(gson.toJson(root));
+            } catch (Exception e) {
+                plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
             }
-            root = newRoot;
-            writeAsync(gson.toJson(root));
-        } catch (Exception e) {
-            plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
-        }
+        });
     }
 
     public PlayerTrackData get(UUID uuid) {
@@ -118,16 +123,14 @@ public class DataManager {
         }
     }
 
-    private void writeAsync(String json) {
-        ioExecutor.execute(() -> {
-            try {
-                Files.createDirectories(dataFile.getParent());
-                Files.writeString(dataFile, json, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (Exception e) {
-                plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
-            }
-        });
+    private void writeJson(String json) {
+        try {
+            Files.createDirectories(dataFile.getParent());
+            Files.writeString(dataFile, json, StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
+        }
     }
 
     private JsonObject serializeData(PlayerTrackData data) {
