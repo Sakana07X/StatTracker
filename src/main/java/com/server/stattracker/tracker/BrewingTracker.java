@@ -33,8 +33,9 @@ public class BrewingTracker implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBrew(BrewEvent event) {
         var loc = event.getBlock().getLocation();
-        Player brewer = loc.getWorld().getNearbyPlayers(loc, 5, p -> !p.isDead())
-            .stream().findFirst().orElse(null);
+        Player brewer = loc.getWorld().getNearbyPlayers(loc, 5).stream()
+            .filter(p -> !p.isDead())
+            .findFirst().orElse(null);
         if (brewer == null) return;
 
         PlayerTrackData data = plugin.getDataManager().get(brewer.getUniqueId());
