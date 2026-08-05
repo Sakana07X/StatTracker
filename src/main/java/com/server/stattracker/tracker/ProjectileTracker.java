@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 投射物追踪器：弓箭射击/命中、三叉戟投掷
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

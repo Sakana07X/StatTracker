@@ -66,6 +66,22 @@ public class PAPIExpansion extends PlaceholderExpansion {
         COUNTER_KEYS.put("arrow_hits",          StatKeys.ARROW_HITS);
         COUNTER_KEYS.put("ocean_ticks",         StatKeys.OCEAN_BIOME_TICKS);
         COUNTER_KEYS.put("playtime_ms",         StatKeys.PLAYTIME_MS);
+        COUNTER_KEYS.put("kill_streak",         StatKeys.KILL_STREAK);
+        COUNTER_KEYS.put("best_kill_streak",    StatKeys.BEST_KILL_STREAK);
+        COUNTER_KEYS.put("fishing_casts",       StatKeys.FISHING_CASTS);
+        COUNTER_KEYS.put("chat_commands",       StatKeys.CHAT_COMMANDS);
+        COUNTER_KEYS.put("shield_blocks",       StatKeys.SHIELD_BLOCKS);
+        COUNTER_KEYS.put("totem_uses",          StatKeys.TOTEM_USES);
+        COUNTER_KEYS.put("name_tag_uses",       StatKeys.NAME_TAG_USES);
+        COUNTER_KEYS.put("vehicle_count",       StatKeys.VEHICLE_COUNT);
+        COUNTER_KEYS.put("firework_uses",       StatKeys.FIREWORK_USES);
+        COUNTER_KEYS.put("golem_builds",        StatKeys.GOLEM_BUILDS);
+        COUNTER_KEYS.put("snowman_builds",      StatKeys.SNOWMAN_BUILDS);
+        COUNTER_KEYS.put("wither_spawns",       StatKeys.WITHER_SPAWNS);
+        COUNTER_KEYS.put("pressure_plates",     StatKeys.PRESSURE_PLATES);
+        COUNTER_KEYS.put("ender_pearl_throws",  StatKeys.ENDER_PEARL_THROWS);
+        COUNTER_KEYS.put("trident_throws",      StatKeys.TRIDENT_THROWS);
+        COUNTER_KEYS.put("chat_length_total",   StatKeys.CHAT_LENGTH_TOTAL);
 
         DOUBLE_KEYS.put("walk_distance",    StatKeys.WALK_DISTANCE);
         DOUBLE_KEYS.put("elytra_total",     StatKeys.ELYTRA_TOTAL);
@@ -76,10 +92,17 @@ public class PAPIExpansion extends PlaceholderExpansion {
         DOUBLE_KEYS.put("swim_distance",    StatKeys.SWIM_DISTANCE);
         DOUBLE_KEYS.put("damage_dealt",     StatKeys.DAMAGE_DEALT);
         DOUBLE_KEYS.put("damage_taken",     StatKeys.DAMAGE_TAKEN);
+        DOUBLE_KEYS.put("highest_y",    StatKeys.HIGHEST_Y);
+        DOUBLE_KEYS.put("lowest_y",     StatKeys.LOWEST_Y);
 
         SET_KEYS.put("biome_count",        StatKeys.VISITED_BIOMES);
         SET_KEYS.put("snow_biome_count",   StatKeys.SNOW_BIOMES);
         SET_KEYS.put("nether_biome_count", StatKeys.NETHER_BIOMES);
+        SET_KEYS.put("advancement_done_count", StatKeys.ADVANCEMENTS_DONE);
+        SET_KEYS.put("crafted_item_count",    StatKeys.CRAFTED_ITEMS);
+        SET_KEYS.put("traded_profession_count", StatKeys.TRADED_PROFESSIONS);
+
+
     }
 
     public PAPIExpansion(StatTrackerPlugin plugin) {
@@ -126,6 +149,16 @@ public class PAPIExpansion extends PlaceholderExpansion {
         if ("longest_survival_hours".equals(lower)) {
             return formatHours(api.getCounter(uuid, StatKeys.LONGEST_SURVIVAL_MS) / 3600000.0);
         }
+        if ("chat_avg_length".equals(lower)) {
+            long msgs = api.getCounter(uuid, StatKeys.CHAT_MESSAGES);
+            long totalLen = api.getCounter(uuid, StatKeys.CHAT_LENGTH_TOTAL);
+            return msgs > 0 ? String.valueOf(totalLen / msgs) : "0";
+        }
+        if ("deaths_per_hour".equals(lower)) {
+            long playMs = api.getCounter(uuid, StatKeys.PLAYTIME_MS);
+            long deaths = api.getCounter(uuid, StatKeys.DEATHS);
+            return playMs > 3600000 ? String.format("%.2f", deaths * 3600000.0 / playMs) : "0.00";
+        }
 
         if (lower.startsWith("counter_")) {
             return String.valueOf(api.getCounter(uuid, params.substring(8)));
@@ -155,6 +188,16 @@ public class PAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(api.getSetSize(uuid, setKey));
         }
 
+        // 快捷前缀: kill_<TYPE>, breed_<SPECIES>, fishing_catch_<MAT>
+        if (lower.startsWith("kill_")) {
+            return String.valueOf(api.getCounter(uuid, StatKeys.KILL_PREFIX + lower.substring(5).toUpperCase()));
+        }
+        if (lower.startsWith("breed_")) {
+            return String.valueOf(api.getCounter(uuid, StatKeys.BREED_SPECIES_PREFIX + lower.substring(6).toUpperCase()));
+        }
+        if (lower.startsWith("fishing_catch_")) {
+            return String.valueOf(api.getCounter(uuid, StatKeys.FISHING_CATCH_PREFIX + lower.substring(14).toUpperCase()));
+        }
         return null;
     }
 

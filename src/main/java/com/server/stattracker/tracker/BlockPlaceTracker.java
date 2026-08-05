@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 方块放置追踪器：总放置量、按方块材质
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

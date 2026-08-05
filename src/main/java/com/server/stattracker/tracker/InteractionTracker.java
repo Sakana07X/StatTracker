@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 交互追踪器：门、活板门、按钮、压力板，按材质细分
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -53,9 +54,11 @@ public class InteractionTracker implements Listener {
 
         if (block.getBlockData() instanceof Door || block.getBlockData() instanceof TrapDoor) {
             data.increment(StatKeys.DOORS_OPENED);
+            data.increment(StatKeys.INTERACT_DOOR_PREFIX + mat.name());
             plugin.getDataManager().markDirty(player.getUniqueId());
         } else if (BUTTONS.contains(mat)) {
             data.increment(StatKeys.BUTTONS_PRESSED);
+            data.increment(StatKeys.INTERACT_BUTTON_PREFIX + mat.name());
             plugin.getDataManager().markDirty(player.getUniqueId());
         }
     }

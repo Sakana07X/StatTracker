@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 交易追踪器：交易次数、绿宝石收支、村民职业
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

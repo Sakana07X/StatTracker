@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 收获追踪器：成熟作物收割按类型（小麦/胡萝卜/马铃薯等）
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

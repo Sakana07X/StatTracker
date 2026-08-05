@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 驯养/繁殖追踪器：驯养按实体类型、繁殖按物种
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -34,6 +35,7 @@ public class TamingTracker implements Listener {
 
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.BREED_COUNT);
+        data.increment(StatKeys.BREED_SPECIES_PREFIX + event.getEntity().getType().name());
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
 }

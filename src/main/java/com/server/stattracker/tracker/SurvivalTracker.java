@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 生存追踪器：在线时长、最长存活记录、死亡原因累计、最低血量
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -7,11 +8,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.UUID;
 public class SurvivalTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
@@ -27,6 +27,20 @@ public class SurvivalTracker implements Listener {
         long now = System.currentTimeMillis();
         data.setCounter(StatKeys.JOIN_TIME, now);
         plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // track lowest health
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        double remaining = player.getHealth() - event.getFinalDamage();
+        if (remaining <= 0) return;
+        PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
+        double current = data.getDouble(StatKeys.LOWEST_HEALTH);
+        if (current == 0 || remaining < current) {
+            data.setDouble(StatKeys.LOWEST_HEALTH, remaining);
+            plugin.getDataManager().markDirty(player.getUniqueId());
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

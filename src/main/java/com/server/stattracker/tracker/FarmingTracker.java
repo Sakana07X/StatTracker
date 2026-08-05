@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 农业追踪器：耕地、种树、蜜蜂繁殖、蜂蜜采集
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

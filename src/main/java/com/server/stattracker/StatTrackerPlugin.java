@@ -52,7 +52,7 @@ public class StatTrackerPlugin extends JavaPlugin {
             new PAPIExpansion(this).register();
         }
 
-        getLogger().info("StatTracker enabled - 27 trackers, "
+        getLogger().info("StatTracker enabled - 28 trackers, "
             + (scheduler.isFolia() ? "Folia" : "Bukkit/Spigot/Paper") + " mode"
             + (conditionManager != null ? ", conditions ON" : ", conditions OFF"));
 
@@ -156,6 +156,7 @@ public class StatTrackerPlugin extends JavaPlugin {
         register(pm, new SurvivalTracker(this));
         register(pm, playtimeTracker);
         register(pm, new ChatTracker(this));
+        register(pm, new MiscTracker(this));
     }
 
     private void register(org.bukkit.plugin.PluginManager pm, org.bukkit.event.Listener listener) {

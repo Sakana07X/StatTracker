@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 消耗品追踪器：食物、药水、牛奶，按物品细分
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -51,6 +52,7 @@ public class ItemConsumeTracker implements Listener {
             data.increment(StatKeys.MILK_DRUNK);
         } else if (FOOD_NAMES.contains(name)) {
             data.increment(StatKeys.FOOD_EATEN);
+            data.increment(StatKeys.CONSUME_FOOD_PREFIX + name);
         }
 
         plugin.getDataManager().markDirty(player.getUniqueId());

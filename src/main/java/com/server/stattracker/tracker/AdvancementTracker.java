@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 进度追踪器：完成进度计数、进度列表（排除配方）
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

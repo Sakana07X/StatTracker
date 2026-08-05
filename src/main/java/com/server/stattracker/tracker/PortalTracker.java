@@ -1,15 +1,15 @@
 package com.server.stattracker.tracker;
 
+// 传送/维度追踪器：传送门使用、末影珍珠投掷与传送、末影之眼、传送门
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.entity.EnderPearl;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 public class PortalTracker implements Listener {
 
@@ -34,6 +34,16 @@ public class PortalTracker implements Listener {
             default -> { return; }
         }
 
+        plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // track ender pearl throws (not just successful teleports)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPearlThrow(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof EnderPearl pearl)) return;
+        if (!(pearl.getShooter() instanceof Player player)) return;
+        PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
+        data.increment(StatKeys.ENDER_PEARL_THROWS);
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
 }

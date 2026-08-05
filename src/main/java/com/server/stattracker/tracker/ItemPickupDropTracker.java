@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 物品拾取/丢弃追踪器：拾取按材质、钻石拾取、末地虚空拾取、丢弃计数
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

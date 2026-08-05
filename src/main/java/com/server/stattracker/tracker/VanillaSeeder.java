@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 原版统计回填器：首次进服将原版统计数据同步到插件计数器
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

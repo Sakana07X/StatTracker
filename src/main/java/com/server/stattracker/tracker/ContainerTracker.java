@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 宝箱/结构追踪器：宝箱开启附近结构检测（遗迹/海底/埋藏等）
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

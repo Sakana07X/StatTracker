@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 红石追踪器：红石元件放置计数
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

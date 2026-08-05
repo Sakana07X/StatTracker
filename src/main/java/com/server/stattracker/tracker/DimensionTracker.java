@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 维度追踪器：首次进入下界/末地标记
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

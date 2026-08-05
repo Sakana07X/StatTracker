@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 合成追踪器：合成次数、合成物品种类（含食物）、熔炉产出
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

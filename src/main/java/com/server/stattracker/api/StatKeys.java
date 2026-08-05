@@ -1,6 +1,62 @@
 package com.server.stattracker.api;
 public final class StatKeys {
     private StatKeys() {}
+
+    // ---- Weapon / Kill Context ----
+    public static final String KILL_WEAPON_PREFIX    = "combat.weapon.";
+    public static final String KILL_METHOD_PREFIX    = "combat.kill_method.";
+    public static final String KILL_DIM_PREFIX       = "combat.kill_dim.";
+    public static final String KILL_BIOME_PREFIX     = "combat.kill_biome.";
+    public static final String KILL_STREAK           = "combat.kill_streak";
+    public static final String BEST_KILL_STREAK      = "combat.best_kill_streak";
+    public static final String FIRST_KILL_PREFIX     = "combat.first_kill.";
+
+    // ---- Death Detail ----
+    public static final String DEATH_CAUSE_COUNT_PREFIX = "death.cause_count.";
+    public static final String LOWEST_HEALTH         = "death.lowest_health";
+
+    // ---- Breeding per-species ----
+    public static final String BREED_SPECIES_PREFIX  = "breeding.";
+
+    // ---- Fishing Detail ----
+    public static final String FISHING_CASTS         = "fishing.casts";
+    public static final String FISHING_CATCH_PREFIX  = "fishing.catch.";
+
+    // ---- Enchanting Detail ----
+    public static final String ENCHANT_TYPE_PREFIX   = "enchant.type.";
+    public static final String ENCHANT_ITEM_PREFIX   = "enchant.item.";
+
+    // ---- Consumption Detail ----
+    public static final String CONSUME_FOOD_PREFIX   = "consume.food.";
+
+    // ---- Interaction Detail ----
+    public static final String INTERACT_DOOR_PREFIX  = "interact.door.";
+    public static final String INTERACT_BUTTON_PREFIX = "interact.button.";
+
+    // ---- Chat Detail ----
+    public static final String CHAT_LENGTH_TOTAL     = "chat.length_total";
+    public static final String CHAT_COMMANDS         = "chat.commands";
+
+    // ---- Movement Detail ----
+    public static final String HIGHEST_Y             = "movement.highest_y";
+    public static final String LOWEST_Y              = "movement.lowest_y";
+    public static final String VEHICLE_COUNT         = "movement.vehicle_count";
+    public static final String FIREWORK_USES         = "movement.firework_uses";
+
+    // ---- Misc Tracker ----
+    public static final String GOLEM_BUILDS          = "misc.golem_builds";
+    public static final String SNOWMAN_BUILDS        = "misc.snowman_builds";
+    public static final String WITHER_SPAWNS         = "misc.wither_spawns";
+    public static final String NAME_TAG_USES         = "misc.name_tag_uses";
+    public static final String NETHERITE_UPGRADES    = "misc.netherite_upgrades";
+    public static final String BEACON_INTERACTS      = "misc.beacon_interacts";
+    public static final String CAMPFIRES_PLACED      = "misc.campfires_placed";
+    public static final String LEASH_USES            = "misc.leash_uses";
+    public static final String SHIELD_BLOCKS         = "misc.shield_blocks";
+    public static final String TOTEM_USES            = "misc.totem_uses";
+    public static final String SCAFFOLD_PLACED       = "misc.scaffold_placed";
+    public static final String BANNER_PLACED         = "misc.banner_placed";
+
     // Mining
     public static final String MINING_TOTAL          = "mining.total";
     public static final String MINING_PREFIX         = "mining.mat.";

@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 挖掘追踪器：总挖掘量、按方块材质、按原木类型
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;

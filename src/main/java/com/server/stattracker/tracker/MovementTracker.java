@@ -1,22 +1,27 @@
 package com.server.stattracker.tracker;
 
+// 移动追踪器：行走/游泳/滑翔/骑乘距离、跳跃、生物群系、最高/最低高度、烟花、载具
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.DataManager;
 import com.server.stattracker.data.PlayerTrackData;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.generator.structure.Structure;
+import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.*;
 
@@ -88,6 +93,13 @@ public class MovementTracker implements Listener {
 
         if (horizontalDistSq > 0.000004) {
             double horizontalDist = Math.sqrt(horizontalDistSq);
+
+            // 最高/最低高度记录
+            int y = to.getBlockY();
+            long maxY = (long) data.getDouble(StatKeys.HIGHEST_Y);
+            long minY = (long) data.getDouble(StatKeys.LOWEST_Y);
+            if (y > maxY) data.setDouble(StatKeys.HIGHEST_Y, y);
+            if (minY == 0 || y < minY) data.setDouble(StatKeys.LOWEST_Y, y);
 
             if (player.isOnGround() && !player.isGliding() && !player.isInsideVehicle()) {
                 data.addDouble(StatKeys.WALK_DISTANCE, horizontalDist);
@@ -194,6 +206,26 @@ public class MovementTracker implements Listener {
                 }
             }
         }
+    }
+
+    // 载具上车计数
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onVehicleEnter(VehicleEnterEvent event) {
+        if (!(event.getEntered() instanceof Player player)) return;
+        plugin.getDataManager().get(player.getUniqueId()).increment(StatKeys.VEHICLE_COUNT);
+        plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // 烟花火箭使用（鞘翅加速）
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFireworkUse(PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) return;
+        if (event.getItem() == null) return;
+        if (event.getItem().getType() != Material.FIREWORK_ROCKET) return;
+        Player player = event.getPlayer();
+        if (!player.isGliding()) return;
+        plugin.getDataManager().get(player.getUniqueId()).increment(StatKeys.FIREWORK_USES);
+        plugin.getDataManager().markDirty(player.getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

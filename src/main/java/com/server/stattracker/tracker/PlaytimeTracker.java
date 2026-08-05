@@ -1,5 +1,6 @@
 package com.server.stattracker.tracker;
 
+// 游戏时长追踪器：在线时长累计、最长存活时间（定时刷新）
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
