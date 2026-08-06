@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    // Spigot API 鈥?鍏煎 Bukkit / Spigot / Paper / Folia 鍏ㄥ妗?    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+    // Spigot API 閳?閸忕厧顔?Bukkit / Spigot / Paper / Folia 閸忋劌顔嶅?    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
     compileOnly 'com.google.code.gson:gson:2.10.1'
     compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly 'net.luckperms:api:5.4'
