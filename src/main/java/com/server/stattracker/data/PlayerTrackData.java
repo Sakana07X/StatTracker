@@ -67,6 +67,11 @@ public class PlayerTrackData {
         counters.put(key, 1L);
     }
 
+    // 原子地将 counter 更新为 max(current, value)，用于连杀等场景
+    public void setCounterMax(String key, long value) {
+        counters.merge(key, value, Math::max);
+    }
+
     public ConcurrentHashMap<String, Long> getCountersMap()     { return counters; }
     public ConcurrentHashMap<String, Set<String>> getSetsMap()    { return sets; }
     public ConcurrentHashMap<String, Double> getDoublesMap()    { return doubles; }

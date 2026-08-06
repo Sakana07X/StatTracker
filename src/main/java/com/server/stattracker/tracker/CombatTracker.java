@@ -1,6 +1,6 @@
 package com.server.stattracker.tracker;
 
-// 战斗追踪器：击杀统计、武器、维度、生物群系、首杀、连杀
+// 鎴樻枟杩借釜鍣細鍑绘潃缁熻銆佹鍣ㄣ€佺淮搴︺€佺敓鐗╃兢绯汇€侀鏉€銆佽繛鏉€
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -41,8 +41,7 @@ public class CombatTracker implements Listener {
         String weapon = mainHand.getType() == Material.AIR ? "HAND" : mainHand.getType().name();
         data.increment(StatKeys.KILL_WEAPON_PREFIX + weapon);
 
-        // 交叉追踪：武器→生物类型集合（空手杀僵尸 → combat.kill_weapon.HAND 包含 ZOMBIE）
-        data.addToSet(StatKeys.KILL_WEAPON_SET_PREFIX + weapon, type);
+        // 浜ゅ弶杩借釜锛氭鍣ㄢ啋鐢熺墿绫诲瀷闆嗗悎锛堢┖鎵嬫潃鍍靛案 鈫?combat.kill_weapon.HAND 鍖呭惈 ZOMBIE锛?        data.addToSet(StatKeys.KILL_WEAPON_SET_PREFIX + weapon, type);
 
         // kill dimension
         String dim = killer.getWorld().getEnvironment().name();
@@ -52,14 +51,11 @@ public class CombatTracker implements Listener {
         String biome = killer.getLocation().getBlock().getBiome().name();
         data.increment(StatKeys.KILL_BIOME_PREFIX + biome);
 
-        // 交叉追踪：生物→群系集合（深暗群系杀监守者 → combat.kill_in_biome.WARDEN 包含 DEEP_DARK）
-        data.addToSet(StatKeys.KILL_TYPE_BIOME_SET_PREFIX + type, biome);
+        // 浜ゅ弶杩借釜锛氱敓鐗┾啋缇ょ郴闆嗗悎锛堟繁鏆楃兢绯绘潃鐩戝畧鑰?鈫?combat.kill_in_biome.WARDEN 鍖呭惈 DEEP_DARK锛?        data.addToSet(StatKeys.KILL_TYPE_BIOME_SET_PREFIX + type, biome);
 
-        // kill streak
-        long streak = data.getCounter(StatKeys.KILL_STREAK) + 1;
-        data.setCounter(StatKeys.KILL_STREAK, streak);
-        long best = data.getCounter(StatKeys.BEST_KILL_STREAK);
-        if (streak > best) data.setCounter(StatKeys.BEST_KILL_STREAK, streak);
+        // kill streak（原子操作，Folia 多线程安全）
+        long streak = data.increment(StatKeys.KILL_STREAK);
+        data.setCounterMax(StatKeys.BEST_KILL_STREAK, streak);
 
         plugin.getDataManager().markDirty(killer.getUniqueId());
     }

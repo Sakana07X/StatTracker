@@ -1,6 +1,5 @@
 package com.server.stattracker.tracker;
 
-// 钓鱼追踪器：钓获次数、逐物品、宝物/垃圾分类、甩竿次数
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -12,12 +11,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class FishingTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
+
+    // 甩竿防刷：State.FISHING 每 tick 触发，用冷却避免重复计数
+    private final Map<UUID, Long> castCooldown = new HashMap<>(16);
+    private static final long CAST_COOLDOWN_MS = 3000;
 
     private static final Set<Material> TREASURE_MATERIALS = Set.of(
         Material.HEART_OF_THE_SEA, Material.NAUTILUS_SHELL,
@@ -38,8 +45,12 @@ public class FishingTracker implements Listener {
         Player player = event.getPlayer();
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
 
-        // count every cast attempt
+        // State.FISHING 每 tick 触发，用冷却限制只计首次
         if (event.getState() == PlayerFishEvent.State.FISHING) {
+            long now = System.currentTimeMillis();
+            Long last = castCooldown.get(player.getUniqueId());
+            if (last != null && now - last < CAST_COOLDOWN_MS) return;
+            castCooldown.put(player.getUniqueId(), now);
             data.increment(StatKeys.FISHING_CASTS);
             plugin.getDataManager().markDirty(player.getUniqueId());
             return;
@@ -63,5 +74,10 @@ public class FishingTracker implements Listener {
         }
 
         plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(PlayerQuitEvent event) {
+        castCooldown.remove(event.getPlayer().getUniqueId());
     }
 }

@@ -57,12 +57,14 @@ public class DataManager {
         for (UUID uuid : toSave) {
             PlayerTrackData data = cache.get(uuid);
             if (data != null) {
-                data.dirty = false;
+                // 先序列化再清脏标记，避免事件线程在清标记后、序列化前写入的数据被跳过
                 root.add(uuid.toString(), serializeData(data));
                 if (data.dirty) {
-                    dirtyPlayers.add(uuid);
+                    // 序列化期间又有新写入，保留到下一轮
+                    data.dirty = false;
                 } else {
                     dirtyPlayers.remove(uuid);
+                    data.dirty = false;
                 }
             } else {
                 dirtyPlayers.remove(uuid);

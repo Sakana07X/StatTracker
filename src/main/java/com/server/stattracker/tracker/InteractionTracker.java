@@ -1,26 +1,29 @@
 package com.server.stattracker.tracker;
 
-// 交互追踪器：门、活板门、按钮、压力板，按材质细分
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.type.Door;
-import org.bukkit.block.data.type.TrapDoor;
+import org.bukkit.block.data.Openable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 public class InteractionTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
 
     // 压力板防刷：每人每 500ms 最多计 1 次
-    private final java.util.Map<java.util.UUID, Long> plateCooldown = new java.util.HashMap<>(16);
+    private final Map<UUID, Long> plateCooldown = new HashMap<>(16);
     private static final long PLATE_COOLDOWN_MS = 500;
 
     private static final Set<Material> BUTTONS = Set.of(
@@ -56,12 +59,10 @@ public class InteractionTracker implements Listener {
         Material mat = block.getType();
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
 
-        if (block.getBlockData() instanceof Door || block.getBlockData() instanceof TrapDoor) {
-            // 只在门从关变开时计数，避免反复右键刷数据
-            boolean isOpen = false;
-            if (block.getBlockData() instanceof Door door) isOpen = door.isOpen();
-            else if (block.getBlockData() instanceof TrapDoor trap) isOpen = trap.isOpen();
-            if (!isOpen) {
+        // 缓存一次 getBlockData()，避免 Folia 多线程下重复调用拿到不同对象
+        if (block.getBlockData() instanceof Openable openable) {
+            // 只在门从关→开时计数，避免反复右键刷数据
+            if (!openable.isOpen()) {
                 data.increment(StatKeys.DOORS_OPENED);
                 data.increment(StatKeys.INTERACT_DOOR_PREFIX + mat.name());
                 plugin.getDataManager().markDirty(player.getUniqueId());
@@ -90,5 +91,11 @@ public class InteractionTracker implements Listener {
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.PRESSURE_PLATES);
         plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // 退出清理冷却 Map，防止内存泄漏
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(PlayerQuitEvent event) {
+        plateCooldown.remove(event.getPlayer().getUniqueId());
     }
 }

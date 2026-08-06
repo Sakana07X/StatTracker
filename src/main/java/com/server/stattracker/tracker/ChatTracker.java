@@ -1,6 +1,5 @@
 package com.server.stattracker.tracker;
 
-// 聊天追踪器：消息计数、消息总长度、频道使用、指令使用
 import com.server.stattracker.StatTrackerPlugin;
 import com.server.stattracker.api.StatKeys;
 import com.server.stattracker.data.PlayerTrackData;
@@ -9,14 +8,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class ChatTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
 
     // 指令防刷：每人每 1000ms 最多计 1 次
-    private final java.util.Map<java.util.UUID, Long> cmdCooldown = new java.util.HashMap<>(16);
+    private final Map<UUID, Long> cmdCooldown = new HashMap<>(16);
     private static final long CMD_COOLDOWN_MS = 1000;
     private static final int MAX_MSG_LENGTH = 256;
 
@@ -48,5 +52,11 @@ public class ChatTracker implements Listener {
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.CHAT_COMMANDS);
         plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // 退出清理冷却 Map
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(PlayerQuitEvent event) {
+        cmdCooldown.remove(event.getPlayer().getUniqueId());
     }
 }
