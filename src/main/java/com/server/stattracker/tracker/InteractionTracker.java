@@ -19,6 +19,10 @@ public class InteractionTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
 
+    // 压力板防刷：每人每 500ms 最多计 1 次
+    private final java.util.Map<java.util.UUID, Long> plateCooldown = new java.util.HashMap<>(16);
+    private static final long PLATE_COOLDOWN_MS = 500;
+
     private static final Set<Material> BUTTONS = Set.of(
         Material.STONE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON,
         Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.ACACIA_BUTTON,
@@ -53,9 +57,15 @@ public class InteractionTracker implements Listener {
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
 
         if (block.getBlockData() instanceof Door || block.getBlockData() instanceof TrapDoor) {
-            data.increment(StatKeys.DOORS_OPENED);
-            data.increment(StatKeys.INTERACT_DOOR_PREFIX + mat.name());
-            plugin.getDataManager().markDirty(player.getUniqueId());
+            // 只在门从关变开时计数，避免反复右键刷数据
+            boolean isOpen = false;
+            if (block.getBlockData() instanceof Door door) isOpen = door.isOpen();
+            else if (block.getBlockData() instanceof TrapDoor trap) isOpen = trap.isOpen();
+            if (!isOpen) {
+                data.increment(StatKeys.DOORS_OPENED);
+                data.increment(StatKeys.INTERACT_DOOR_PREFIX + mat.name());
+                plugin.getDataManager().markDirty(player.getUniqueId());
+            }
         } else if (BUTTONS.contains(mat)) {
             data.increment(StatKeys.BUTTONS_PRESSED);
             data.increment(StatKeys.INTERACT_BUTTON_PREFIX + mat.name());
@@ -72,6 +82,11 @@ public class InteractionTracker implements Listener {
         if (!PRESSURE_PLATES.contains(mat)) return;
 
         Player player = event.getPlayer();
+        long now = System.currentTimeMillis();
+        Long last = plateCooldown.get(player.getUniqueId());
+        if (last != null && now - last < PLATE_COOLDOWN_MS) return;
+        plateCooldown.put(player.getUniqueId(), now);
+
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.PRESSURE_PLATES);
         plugin.getDataManager().markDirty(player.getUniqueId());

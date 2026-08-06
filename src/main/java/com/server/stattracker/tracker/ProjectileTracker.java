@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.projectiles.ProjectileSource;
 public class ProjectileTracker implements Listener {
 
@@ -39,10 +40,20 @@ public class ProjectileTracker implements Listener {
 
         if (proj instanceof Arrow) {
             data.increment(StatKeys.ARROW_HITS);
-        } else if (proj instanceof Trident) {
-            data.increment(StatKeys.TRIDENT_THROWS);
         }
+        // 三叉戟命中不重复计数投掷次数（投掷已在 onPearlThrow 类似逻辑中处理）
+        // 如果需要命中追踪，应使用独立的 key
 
+        plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // 三叉戟投掷计数（单独监听 ProjectileLaunchEvent）
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTridentThrow(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof Trident)) return;
+        if (!(event.getEntity().getShooter() instanceof Player player)) return;
+        PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
+        data.increment(StatKeys.TRIDENT_THROWS);
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
 }
