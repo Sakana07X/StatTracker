@@ -57,6 +57,14 @@ public final class StatKeys {
     public static final String SCAFFOLD_PLACED       = "misc.scaffold_placed";
     public static final String BANNER_PLACED         = "misc.banner_placed";
 
+    // ---- Armor Context (kill time) ----
+    public static final String NO_ARMOR_KILLS        = "combat.no_armor_kills";
+    public static final String FULL_ARMOR_KILLS      = "combat.full_armor_kills";
+    public static final String ARMOR_HEAD_PREFIX      = "combat.armor_head.";
+    public static final String ARMOR_CHEST_PREFIX     = "combat.armor_chest.";
+    public static final String ARMOR_LEGS_PREFIX      = "combat.armor_legs.";
+    public static final String ARMOR_FEET_PREFIX      = "combat.armor_feet.";
+
     // Mining
     public static final String MINING_TOTAL          = "mining.total";
     public static final String MINING_PREFIX         = "mining.mat.";

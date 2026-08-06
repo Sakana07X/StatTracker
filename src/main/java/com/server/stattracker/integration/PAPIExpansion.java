@@ -82,6 +82,8 @@ public class PAPIExpansion extends PlaceholderExpansion {
         COUNTER_KEYS.put("ender_pearl_throws",  StatKeys.ENDER_PEARL_THROWS);
         COUNTER_KEYS.put("trident_throws",      StatKeys.TRIDENT_THROWS);
         COUNTER_KEYS.put("chat_length_total",   StatKeys.CHAT_LENGTH_TOTAL);
+        COUNTER_KEYS.put("no_armor_kills",       StatKeys.NO_ARMOR_KILLS);
+        COUNTER_KEYS.put("full_armor_kills",     StatKeys.FULL_ARMOR_KILLS);
 
         DOUBLE_KEYS.put("walk_distance",    StatKeys.WALK_DISTANCE);
         DOUBLE_KEYS.put("elytra_total",     StatKeys.ELYTRA_TOTAL);

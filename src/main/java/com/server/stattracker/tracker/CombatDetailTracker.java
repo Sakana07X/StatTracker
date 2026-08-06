@@ -17,6 +17,9 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Trident;
 import org.bukkit.entity.Explosive;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.Material;
 public class CombatDetailTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
@@ -63,6 +66,31 @@ public class CombatDetailTracker implements Listener {
 
         PlayerTrackData data = plugin.getDataManager().get(killer.getUniqueId());
         data.increment(StatKeys.KILL_METHOD_PREFIX + method);
+
+        // 护甲上下文：记录击杀时穿戴的护甲及无护甲击杀
+        PlayerInventory inv = killer.getInventory();
+        ItemStack head  = inv.getHelmet();
+        ItemStack chest = inv.getChestplate();
+        ItemStack legs  = inv.getLeggings();
+        ItemStack feet  = inv.getBoots();
+
+        boolean hasHelmet    = head  != null && head.getType()  != Material.AIR;
+        boolean hasChestplate = chest != null && chest.getType() != Material.AIR;
+        boolean hasLeggings  = legs  != null && legs.getType()  != Material.AIR;
+        boolean hasBoots     = feet  != null && feet.getType()  != Material.AIR;
+
+        boolean noArmor = !hasHelmet && !hasChestplate && !hasLeggings && !hasBoots;
+        if (noArmor) {
+            data.increment(StatKeys.NO_ARMOR_KILLS);
+        } else {
+            boolean fullArmor = hasHelmet && hasChestplate && hasLeggings && hasBoots;
+            if (fullArmor) data.increment(StatKeys.FULL_ARMOR_KILLS);
+            if (hasHelmet)    data.increment(StatKeys.ARMOR_HEAD_PREFIX  + head.getType().name());
+            if (hasChestplate) data.increment(StatKeys.ARMOR_CHEST_PREFIX + chest.getType().name());
+            if (hasLeggings)  data.increment(StatKeys.ARMOR_LEGS_PREFIX  + legs.getType().name());
+            if (hasBoots)     data.increment(StatKeys.ARMOR_FEET_PREFIX  + feet.getType().name());
+        }
+
         plugin.getDataManager().markDirty(killer.getUniqueId());
     }
 

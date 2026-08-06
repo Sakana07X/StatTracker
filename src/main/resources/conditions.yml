@@ -52,6 +52,15 @@ conditions:
   #   permission: "cyutitles.obtain.jack_of_all"
   #   revoke-command: "cyutitles take %player% jack_of_all"
   #   requires:
-  #     - "mining_master"
-  #     - "explorer"
-  #     - {type: COUNTER, key: "fishing.caught", operator: ">=", value: 500}
+#     - "mining_master"
+#     - "explorer"
+#     - {type: COUNTER, key: "fishing.caught", operator: ">=", value: 500}
+#
+# Example: no armor kill count
+# no_armor_slayer:
+#   display: "Bare Hands Slayer"
+#   type: COUNTER
+#   key: "combat.no_armor_kills"
+#   operator: ">="
+#   value: 10
+#   permission: "cyutitles.obtain.no_armor_slayer"
