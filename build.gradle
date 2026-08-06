@@ -13,17 +13,11 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-    maven { url = 'https://repo.luckperms.net/repository/maven-public/' }
 }
 
 dependencies {
-    // Spigot API 閳?閸忕厧顔?Bukkit / Spigot / Paper / Folia 閸忋劌顔嶅?    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
-    compileOnly 'com.google.code.gson:gson:2.10.1'
-    compileOnly 'me.clip:placeholderapi:2.11.6'
-    compileOnly 'net.luckperms:api:5.4'
+    // 本地 lib/ 目录的 API JAR（compileOnly，不打包进发行 JAR）
+    compileOnly fileTree(dir: 'lib', include: ['paper-api.jar', 'papi.jar', 'luckperms-api.jar', 'gson.jar', 'bungee-chat.jar', 'adventure-api.jar', 'adventure-key.jar', 'examination-api.jar'])
 }
 
 tasks.withType(JavaCompile).configureEach {
