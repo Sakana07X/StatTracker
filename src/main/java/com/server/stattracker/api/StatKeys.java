@@ -66,10 +66,10 @@ public final class StatKeys {
     public static final String ARMOR_FEET_PREFIX      = "combat.armor_feet.";
 
     // ---- Kill Cross-Tracking ----
-    // combat.kill_weapon.<WEAPON>.<TYPE> — 用特定武器击杀特定生物
-    public static final String KILL_WEAPON_TYPE_PREFIX = "combat.kill_weapon.";
-    // combat.kill_in_biome.<TYPE>.<BIOME> — 在特定群系击杀特定生物
-    public static final String KILL_TYPE_BIOME_PREFIX  = "combat.kill_in_biome.";
+    // combat.kill_weapon.<WEAPON> — Set: 用该武器击杀过的所有生物类型
+    public static final String KILL_WEAPON_SET_PREFIX  = "combat.kill_weapon.";
+    // combat.kill_in_biome.<TYPE> — Set: 在哪些群系击杀过该生物
+    public static final String KILL_TYPE_BIOME_SET_PREFIX = "combat.kill_in_biome.";
 
     // Mining
     public static final String MINING_TOTAL          = "mining.total";

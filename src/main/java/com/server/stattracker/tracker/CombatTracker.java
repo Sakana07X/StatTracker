@@ -41,8 +41,8 @@ public class CombatTracker implements Listener {
         String weapon = mainHand.getType() == Material.AIR ? "HAND" : mainHand.getType().name();
         data.increment(StatKeys.KILL_WEAPON_PREFIX + weapon);
 
-        // 交叉追踪：武器×生物（空手杀僵尸 = combat.kill_weapon.HAND.ZOMBIE）
-        data.increment(StatKeys.KILL_WEAPON_TYPE_PREFIX + weapon + "." + type);
+        // 交叉追踪：武器→生物类型集合（空手杀僵尸 → combat.kill_weapon.HAND 包含 ZOMBIE）
+        data.addToSet(StatKeys.KILL_WEAPON_SET_PREFIX + weapon, type);
 
         // kill dimension
         String dim = killer.getWorld().getEnvironment().name();
@@ -52,8 +52,8 @@ public class CombatTracker implements Listener {
         String biome = killer.getLocation().getBlock().getBiome().name();
         data.increment(StatKeys.KILL_BIOME_PREFIX + biome);
 
-        // 交叉追踪：生物×群系（深暗群系杀监守者 = combat.kill_in_biome.WARDEN.DEEP_DARK）
-        data.increment(StatKeys.KILL_TYPE_BIOME_PREFIX + type + "." + biome);
+        // 交叉追踪：生物→群系集合（深暗群系杀监守者 → combat.kill_in_biome.WARDEN 包含 DEEP_DARK）
+        data.addToSet(StatKeys.KILL_TYPE_BIOME_SET_PREFIX + type, biome);
 
         // kill streak
         long streak = data.getCounter(StatKeys.KILL_STREAK) + 1;
