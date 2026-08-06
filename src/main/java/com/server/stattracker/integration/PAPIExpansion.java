@@ -190,6 +190,15 @@ public class PAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(api.getSetSize(uuid, setKey));
         }
 
+        // 交叉追踪：killweapon_<WEAPON>.<TYPE>、killinbiome_<TYPE>.<BIOME>
+        if (lower.startsWith("killweapon_")) {
+            return String.valueOf(api.getCounter(uuid,
+                StatKeys.KILL_WEAPON_TYPE_PREFIX + lower.substring(12).toUpperCase()));
+        }
+        if (lower.startsWith("killinbiome_")) {
+            return String.valueOf(api.getCounter(uuid,
+                StatKeys.KILL_TYPE_BIOME_PREFIX + lower.substring(12).toUpperCase()));
+        }
         // 快捷前缀: kill_<TYPE>, breed_<SPECIES>, fishing_catch_<MAT>
         if (lower.startsWith("kill_")) {
             return String.valueOf(api.getCounter(uuid, StatKeys.KILL_PREFIX + lower.substring(5).toUpperCase()));

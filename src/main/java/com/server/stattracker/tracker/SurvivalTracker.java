@@ -25,6 +25,16 @@ public class SurvivalTracker implements Listener {
         Player player = event.getPlayer();
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         long now = System.currentTimeMillis();
+
+        // 服务器崩溃后旧 JOIN_TIME 可能残留，先回算存活时长
+        long oldJoin = data.getCounter(StatKeys.JOIN_TIME);
+        if (oldJoin > 0) {
+            long survived = now - oldJoin;
+            if (survived > data.getCounter(StatKeys.LONGEST_SURVIVAL_MS)) {
+                data.setCounter(StatKeys.LONGEST_SURVIVAL_MS, survived);
+            }
+        }
+
         data.setCounter(StatKeys.JOIN_TIME, now);
         plugin.getDataManager().markDirty(player.getUniqueId());
     }

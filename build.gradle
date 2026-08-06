@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.server'
-version = '1.2.3'
+version = '1.2.4'
 
 java {
     toolchain {
@@ -20,8 +20,7 @@ repositories {
 }
 
 dependencies {
-    // Spigot API — 兼容 Bukkit / Spigot / Paper / Folia 全家桶
-    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+    // Spigot API 鈥?鍏煎 Bukkit / Spigot / Paper / Folia 鍏ㄥ妗?    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
     compileOnly 'com.google.code.gson:gson:2.10.1'
     compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly 'net.luckperms:api:5.4'

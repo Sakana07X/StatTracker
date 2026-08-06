@@ -41,6 +41,8 @@ public class VanillaSeeder implements Listener {
 
         long pickupTotal = 0;
         long craftTotal = 0;
+        long miningTotal = 0;
+        long placementTotal = 0;
 
         for (Material mat : Material.values()) {
             if (mat == Material.AIR) continue;
@@ -50,6 +52,7 @@ public class VanillaSeeder implements Listener {
                 int broken = stat(player, BLOCK_BREAK_STAT, mat);
                 if (broken > 0) {
                     data.setCounter(StatKeys.MINING_PREFIX + mat.name(), broken);
+                    miningTotal += broken;
                     updated = true;
                 }
             }
@@ -57,6 +60,7 @@ public class VanillaSeeder implements Listener {
                 int placed = stat(player, BLOCK_PLACED_STAT, mat);
                 if (placed > 0) {
                     data.setCounter(StatKeys.PLACEMENT_PREFIX + mat.name(), placed);
+                    placementTotal += placed;
                     updated = true;
                 }
             }
@@ -81,6 +85,14 @@ public class VanillaSeeder implements Listener {
         }
         if (craftTotal > 0) {
             data.setCounter(StatKeys.CRAFT_COUNT, craftTotal);
+            updated = true;
+        }
+        if (miningTotal > 0) {
+            data.setCounter(StatKeys.MINING_TOTAL, miningTotal);
+            updated = true;
+        }
+        if (placementTotal > 0) {
+            data.setCounter(StatKeys.PLACEMENT_TOTAL, placementTotal);
             updated = true;
         }
 

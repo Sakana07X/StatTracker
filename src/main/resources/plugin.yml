@@ -1,20 +1,20 @@
 name: StatTracker
-version: 1.2.3
+version: 1.2.4
 main: com.server.stattracker.StatTrackerPlugin
 api-version: 1.13
 folia-supported: true
 author: Sakana
 softdepend: [PlaceholderAPI, LuckPerms, TrChat, PlayerTitle, Vault]
-description: 轻量级高性能玩家行为追踪框架 — 兼容 Bukkit/Spigot/Paper/Folia，28 个追踪器
+description: Lightweight high-performance player behavior tracker - compatible with Bukkit/Spigot/Paper/Folia, 28+ trackers
 
 commands:
   stattracker:
-    description: StatTracker 命令
-    usage: /stattracker <子命令>
+    description: StatTracker commands
+    usage: /stattracker <subcommand>
     permission: stattracker.admin
     aliases: [st]
 
 permissions:
   stattracker.admin:
-    description: StatTracker 管理命令
+    description: StatTracker admin commands
     default: op
