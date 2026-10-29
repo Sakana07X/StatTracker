@@ -13,17 +13,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InteractionTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
 
     // 压力板防刷：每人每 500ms 最多计 1 次
-    private final Map<UUID, Long> plateCooldown = new HashMap<>(16);
+    private final Map<UUID, Long> plateCooldown = new ConcurrentHashMap<>(16);
     private static final long PLATE_COOLDOWN_MS = 500;
 
     private static final Set<Material> BUTTONS = Set.of(

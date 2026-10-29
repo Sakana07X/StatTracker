@@ -11,16 +11,16 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
 
     // 指令防刷：每人每 1000ms 最多计 1 次
-    private final Map<UUID, Long> cmdCooldown = new HashMap<>(16);
+    private final Map<UUID, Long> cmdCooldown = new ConcurrentHashMap<>(16);
     private static final long CMD_COOLDOWN_MS = 1000;
     private static final int MAX_MSG_LENGTH = 256;
 

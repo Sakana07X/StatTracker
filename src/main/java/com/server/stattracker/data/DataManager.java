@@ -31,17 +31,65 @@ public class DataManager {
     }
 
     public void load() {
-        if (!Files.exists(dataFile)) return;
-        try (Reader reader = Files.newBufferedReader(dataFile, StandardCharsets.UTF_8)) {
-            JsonObject parsed = gson.fromJson(reader, JsonObject.class);
+        Path bakPath = dataFile.resolveSibling(dataFile.getFileName().toString() + ".bak");
+        // 主文件缺失但备份存在时改从备份加载
+        Path source = dataFile;
+        if (!Files.exists(dataFile) && Files.exists(bakPath)) {
+            plugin.getLogger().warning("主数据文件缺失，改从备份 " + bakPath.getFileName() + " 加载");
+            source = bakPath;
+        }
+        if (!Files.exists(source)) return;
+        try (Reader reader = Files.newBufferedReader(source, StandardCharsets.UTF_8)) {
+            JsonObject parsed;
+            try {
+                parsed = gson.fromJson(reader, JsonObject.class);
+            } catch (Exception e) {
+                if (source.equals(dataFile) && Files.exists(bakPath)) {
+                    plugin.getLogger().warning("主数据文件解析失败，改从备份加载: " + e.getMessage());
+                    try (Reader bakReader = Files.newBufferedReader(bakPath, StandardCharsets.UTF_8)) {
+                        parsed = gson.fromJson(bakReader, JsonObject.class);
+                    }
+                    source = bakPath;
+                } else {
+                    throw e;
+                }
+            }
+            // 主文件为空（如 0 字节）时 Gson 返回 null 而不抛异常，同样走备份回退
+            if (parsed == null && source.equals(dataFile) && Files.exists(bakPath)) {
+                plugin.getLogger().warning("主数据文件内容为空，改从备份加载");
+                try (Reader bakReader = Files.newBufferedReader(bakPath, StandardCharsets.UTF_8)) {
+                    parsed = gson.fromJson(bakReader, JsonObject.class);
+                }
+                source = bakPath;
+            }
             if (parsed == null) return;
             root = parsed;
-            for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
-                UUID uuid = UUID.fromString(entry.getKey());
-                PlayerTrackData data = deserializeData(entry.getValue().getAsJsonObject());
-                cache.put(uuid, data);
+            // 解析成功后才备份，且仅当来源是主文件：.bak 始终保存上一次成功解析的内容，
+            // 解析失败时回退读到的才是真正的旧数据
+            if (source.equals(dataFile)) {
+                try {
+                    Files.copy(dataFile, bakPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (Exception e) {
+                    plugin.getLogger().warning("备份玩家数据失败: " + e.getMessage());
+                }
             }
-            plugin.getLogger().info("已加载 " + cache.size() + " 条玩家数据");
+            int skipped = 0;
+            for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+                // 单条损坏只跳过该条，未解析的条目留在 root 中避免被增量保存覆盖丢失
+                try {
+                    UUID uuid = UUID.fromString(entry.getKey());
+                    PlayerTrackData data = deserializeData(entry.getValue().getAsJsonObject());
+                    cache.put(uuid, data);
+                } catch (Exception e) {
+                    skipped++;
+                    plugin.getLogger().warning("跳过损坏的玩家数据条目 " + entry.getKey() + ": " + e.getMessage());
+                }
+            }
+            if (skipped > 0) {
+                plugin.getLogger().info("已加载 " + cache.size() + " 条玩家数据，跳过 " + skipped + " 条损坏条目");
+            } else {
+                plugin.getLogger().info("已加载 " + cache.size() + " 条玩家数据");
+            }
         } catch (Exception e) {
             plugin.getLogger().warning("加载玩家数据失败: " + e.getMessage());
         }
@@ -53,22 +101,12 @@ public class DataManager {
     }
 
     private void saveDirtyTask() {
-        Set<UUID> toSave = new HashSet<>(dirtyPlayers);
-        for (UUID uuid : toSave) {
+        // 弱一致迭代：先移出脏集合再序列化，序列化期间发生的新写入会重新标记，下一轮补存
+        for (UUID uuid : dirtyPlayers) {
+            dirtyPlayers.remove(uuid);
             PlayerTrackData data = cache.get(uuid);
-            if (data != null) {
-                // 先序列化再清脏标记，避免事件线程在清标记后、序列化前写入的数据被跳过
-                root.add(uuid.toString(), serializeData(data));
-                if (data.dirty) {
-                    // 序列化期间又有新写入，保留到下一轮
-                    data.dirty = false;
-                } else {
-                    dirtyPlayers.remove(uuid);
-                    data.dirty = false;
-                }
-            } else {
-                dirtyPlayers.remove(uuid);
-            }
+            if (data == null) continue;
+            root.add(uuid.toString(), serializeData(data));
         }
 
         writeJson(gson.toJson(root));
@@ -79,14 +117,9 @@ public class DataManager {
             try {
                 JsonObject newRoot = new JsonObject();
                 for (Map.Entry<UUID, PlayerTrackData> entry : cache.entrySet()) {
-                    PlayerTrackData data = entry.getValue();
-                    data.dirty = false;
-                    newRoot.add(entry.getKey().toString(), serializeData(data));
-                    if (data.dirty) {
-                        dirtyPlayers.add(entry.getKey());
-                    } else {
-                        dirtyPlayers.remove(entry.getKey());
-                    }
+                    // 先移出脏集合再序列化，保存期间的新写入保留到下一轮增量保存
+                    dirtyPlayers.remove(entry.getKey());
+                    newRoot.add(entry.getKey().toString(), serializeData(entry.getValue()));
                 }
                 root = newRoot;
                 writeJson(gson.toJson(root));
@@ -109,11 +142,9 @@ public class DataManager {
     }
 
     public void markDirty(UUID uuid) {
-        PlayerTrackData data = cache.get(uuid);
-        if (data != null && !data.dirty) {
-            data.dirty = true;
-            dirtyPlayers.add(uuid);
-        }
+        if (cache.get(uuid) == null) return;
+        // 无条件加入：add 幂等且廉价，脏集合为唯一事实源，不做 check-then-act
+        dirtyPlayers.add(uuid);
     }
 
     public void reset(UUID uuid) {
@@ -137,8 +168,15 @@ public class DataManager {
     private void writeJson(String json) {
         try {
             Files.createDirectories(dataFile.getParent());
-            Files.writeString(dataFile, json, StandardCharsets.UTF_8,
+            // 先写同目录临时文件，再原子替换，避免写盘中断留下损坏的半截文件
+            Path tmpFile = dataFile.resolveSibling(dataFile.getFileName().toString() + ".tmp");
+            Files.writeString(tmpFile, json, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            try {
+                Files.move(tmpFile, dataFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tmpFile, dataFile, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (Exception e) {
             plugin.getLogger().warning("保存玩家数据失败: " + e.getMessage());
         }

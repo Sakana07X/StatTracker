@@ -196,7 +196,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
         // 扩展占位符：killweapon_<WEAPON>（该武器击杀过的生物种类数）、killinbiome_<TYPE>（该生物被击杀过的群系数）
         if (lower.startsWith("killweapon_")) {
             return String.valueOf(api.getSetSize(uuid,
-                StatKeys.KILL_WEAPON_SET_PREFIX + lower.substring(12).toUpperCase()));
+                StatKeys.KILL_WEAPON_SET_PREFIX + lower.substring(11).toUpperCase()));
         }
         if (lower.startsWith("killinbiome_")) {
             return String.valueOf(api.getSetSize(uuid,

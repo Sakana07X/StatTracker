@@ -24,6 +24,7 @@ import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MovementTracker implements Listener {
 
@@ -57,9 +58,9 @@ public class MovementTracker implements Listener {
     private static final double STRUCT_CHECK_DIST_SQ = 900;
     private static final long OCEAN_FLUSH_INTERVAL_MS = 1000;
 
-    private final HashMap<UUID, PlayerMoveState> moveStates = new HashMap<>(64);
-    private final HashSet<UUID> sprinting = new HashSet<>(16);
-    private final HashSet<UUID> movedPlayers = new HashSet<>(64);
+    private final ConcurrentHashMap<UUID, PlayerMoveState> moveStates = new ConcurrentHashMap<>(64);
+    private final Set<UUID> sprinting = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> movedPlayers = ConcurrentHashMap.newKeySet();
 
     private static class PlayerMoveState {
         Location lastBiomeCheck;

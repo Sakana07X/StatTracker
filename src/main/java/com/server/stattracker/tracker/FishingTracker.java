@@ -13,17 +13,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FishingTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
 
     // 甩竿防刷：State.FISHING 每 tick 触发，用冷却避免重复计数
-    private final Map<UUID, Long> castCooldown = new HashMap<>(16);
+    private final Map<UUID, Long> castCooldown = new ConcurrentHashMap<>(16);
     private static final long CAST_COOLDOWN_MS = 3000;
 
     private static final Set<Material> TREASURE_MATERIALS = Set.of(

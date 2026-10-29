@@ -14,14 +14,14 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MiscTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
-    private final Map<UUID, Long> recentPumpkinPlace = new HashMap<>(8);
+    private final Map<UUID, Long> recentPumpkinPlace = new ConcurrentHashMap<>(8);
 
     public MiscTracker(StatTrackerPlugin plugin) {
         this.plugin = plugin;

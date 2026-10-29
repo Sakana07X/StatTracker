@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.generator.structure.Structure;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ContainerTracker implements Listener {
 
@@ -53,7 +54,7 @@ public class ContainerTracker implements Listener {
         COLLECTOR_STRUCTURES.putAll(RUIN_STRUCTURES);
     }
 
-    private final HashMap<UUID, CacheEntry> detectCache = new HashMap<>(32);
+    private final ConcurrentHashMap<UUID, CacheEntry> detectCache = new ConcurrentHashMap<>(32);
     private static final long CACHE_TTL_MS = 5000;
     private static final double CACHE_RANGE_SQ = 256;
 

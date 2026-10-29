@@ -97,13 +97,13 @@ public class StatTrackerPlugin extends JavaPlugin {
             ? luckPermsBridge
             : new VaultPermissionBridge(this);
         if (!permBridge.isAvailable()) {
-            getLogger().warning("娌℃湁鍙敤鐨勬潈闄愬悗绔紝鏉′欢鏉冮檺妗ユ湭鍚敤");
+            getLogger().warning("没有可用的权限后端，条件权限桥未启用");
             return;
         }
         conditionBridge = new ConditionPermissionBridge(this, conditionManager, permBridge);
         getServer().getPluginManager().registerEvents(conditionBridge, this);
         scheduler.runAtFixedRate(600, 600, () -> conditionBridge.flush());
-        getLogger().info("ConditionPermissionBridge enabled - 鏉冮檺鍚庣: " + permBridge.getName());
+        getLogger().info("ConditionPermissionBridge enabled - 权限后端: " + permBridge.getName());
     }
 
     private void initConditionSystem() {
@@ -112,7 +112,7 @@ public class StatTrackerPlugin extends JavaPlugin {
         if (conditionManager.hasManagedConditions()) {
             initConditionBridge();
         } else {
-            getLogger().info("娌℃湁甯?permission 鐨勬潯浠讹紝鏉′欢鏉冮檺妗ユ湭鍚敤");
+            getLogger().info("没有带 permission 的条件，条件权限桥未启用");
         }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new ConditionPAPI(this, conditionManager).register();

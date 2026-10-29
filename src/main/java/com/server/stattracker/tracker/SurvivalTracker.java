@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class SurvivalTracker implements Listener {
 
@@ -36,6 +37,24 @@ public class SurvivalTracker implements Listener {
         }
 
         data.setCounter(StatKeys.JOIN_TIME, now);
+        plugin.getDataManager().markDirty(player.getUniqueId());
+    }
+
+    // 退出时结算存活时长并清零 JOIN_TIME，避免离线时长被下次上线的崩溃恢复计入
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
+        long now = System.currentTimeMillis();
+
+        long joinTime = data.getCounter(StatKeys.JOIN_TIME);
+        if (joinTime > 0) {
+            long survival = now - joinTime;
+            if (survival > data.getCounter(StatKeys.LONGEST_SURVIVAL_MS)) {
+                data.setCounter(StatKeys.LONGEST_SURVIVAL_MS, survival);
+            }
+        }
+        data.setCounter(StatKeys.JOIN_TIME, 0);
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
 

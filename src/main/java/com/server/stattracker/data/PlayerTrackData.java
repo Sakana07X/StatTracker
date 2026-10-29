@@ -9,8 +9,6 @@ public class PlayerTrackData {
     private final ConcurrentHashMap<String, Set<String>> sets = new ConcurrentHashMap<>(8);
     private final ConcurrentHashMap<String, Double> doubles  = new ConcurrentHashMap<>(8);
 
-    transient volatile boolean dirty = false;
-
     public long getCounter(String key) {
         Long val = counters.get(key);
         return val != null ? val : 0L;
