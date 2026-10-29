@@ -193,7 +193,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(api.getSetSize(uuid, setKey));
         }
 
-        // 娴溿倕寮舵潻鍊熼嚋閿涙illweapon_<WEAPON>閿涘牐顕氬锕€娅掗崙缁樻絻鏉╁洨娈戦悽鐔哄⒖缁夊秶琚弫甯礆閵嗕共illinbiome_<TYPE>閿涘牐顕氶悽鐔哄⒖鐞氼偄鍤弶鈧潻鍥╂畱缂囥倗閮撮弫甯礆
+        // 扩展占位符：killweapon_<WEAPON>（该武器击杀过的生物种类数）、killinbiome_<TYPE>（该生物被击杀过的群系数）
         if (lower.startsWith("killweapon_")) {
             return String.valueOf(api.getSetSize(uuid,
                 StatKeys.KILL_WEAPON_SET_PREFIX + lower.substring(12).toUpperCase()));
@@ -202,7 +202,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(api.getSetSize(uuid,
                 StatKeys.KILL_TYPE_BIOME_SET_PREFIX + lower.substring(12).toUpperCase()));
         }
-        // 闊浂鍋呭畵搴ㄥ礈瀹ュ洨纾? kill_<TYPE>, breed_<SPECIES>, fishing_catch_<MAT>
+        // 快捷前缀: kill_<TYPE>, breed_<SPECIES>, fishing_catch_<MAT>
         if (lower.startsWith("kill_")) {
             return String.valueOf(api.getCounter(uuid, StatKeys.KILL_PREFIX + lower.substring(5).toUpperCase()));
         }
