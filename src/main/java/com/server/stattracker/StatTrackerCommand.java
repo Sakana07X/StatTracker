@@ -133,12 +133,18 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter, Listen
 
     private void reset(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage("用法: /stattracker reset <玩家>");
+            sender.sendMessage("用法: /stattracker reset <玩家> [confirm]");
             return;
         }
         UUID uuid = resolveUuid(args[1]);
         if (uuid == null) {
             sender.sendMessage("找不到玩家 " + args[1] + "，可用其 UUID 重试");
+            return;
+        }
+        // 无状态二次确认：不带 confirm 只警告不删除，重发一次带 confirm 的命令即生效
+        if (args.length < 3 || !args[2].equalsIgnoreCase("confirm")) {
+            sender.sendMessage("警告: 将永久删除 " + args[1] + " 的全部追踪数据，不可恢复!");
+            sender.sendMessage("确认执行: /stattracker reset " + args[1] + " confirm");
             return;
         }
         plugin.getDataManager().reset(uuid);
