@@ -55,6 +55,8 @@ public class ContainerTracker implements Listener {
     }
 
     private final ConcurrentHashMap<UUID, CacheEntry> detectCache = new ConcurrentHashMap<>(32);
+    // 结构定位结果复用缓存：与 MovementTracker 各持实例、零交集，无需共享（detectCache 判"短时间内重复开箱"，这里判"结构定位结果复用"）
+    private final StructureLocateCache structCache = new StructureLocateCache();
     private static final long CACHE_TTL_MS = 5000;
     private static final double CACHE_RANGE_SQ = 256;
 
@@ -130,8 +132,8 @@ public class ContainerTracker implements Listener {
 
         for (Structure structure : toCheck) {
             try {
-                var found = loc.getWorld().locateNearestStructure(loc, structure, 10, false);
-                if (found != null && found.getLocation().distanceSquared(loc) < 400) {
+                var found = structCache.locate(loc.getWorld(), structure, loc, 10, false);
+                if (found != null && found.distanceSquared(loc) < 400) {
                     for (var entry : reverseMap.entrySet()) {
                         if (entry.getKey() == structure) result.add(entry.getValue());
                     }

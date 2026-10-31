@@ -4,24 +4,43 @@ import com.server.stattracker.condition.ConditionManager;
 import com.server.stattracker.data.PlayerTrackData;
 import com.server.stattracker.tracker.VanillaSeeder;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class StatTrackerCommand implements CommandExecutor, TabCompleter {
+public class StatTrackerCommand implements CommandExecutor, TabCompleter, Listener {
 
     private final StatTrackerPlugin plugin;
 
+    /** 本地名字索引：uuid -> 名字（覆盖本次运行期间上线的玩家） */
+    private final ConcurrentHashMap<UUID, String> namesByUuid = new ConcurrentHashMap<>();
+    /** 反向索引：名字小写 -> uuid，保持大小写不敏感的解析行为 */
+    private final ConcurrentHashMap<String, UUID> uuidsByName = new ConcurrentHashMap<>();
+
     public StatTrackerCommand(StatTrackerPlugin plugin) {
         this.plugin = plugin;
+        // 命令在 onEnable 中构造，此时插件已 enabled，可安全注册监听
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        namesByUuid.put(player.getUniqueId(), player.getName());
+        uuidsByName.put(player.getName().toLowerCase(Locale.ROOT), player.getUniqueId());
     }
 
     @Override
@@ -67,7 +86,7 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
         }
         UUID uuid = resolveUuid(args[1]);
         if (uuid == null) {
-            sender.sendMessage("找不到玩家 " + args[1]);
+            sender.sendMessage("找不到玩家 " + args[1] + "，可用其 UUID 重试");
             return;
         }
         PlayerTrackData data = plugin.getDataManager().getIfPresent(uuid);
@@ -92,7 +111,7 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 2) {
             uuid = resolveUuid(args[1]);
             if (uuid == null) {
-                sender.sendMessage("找不到玩家 " + args[1]);
+                sender.sendMessage("找不到玩家 " + args[1] + "，可用其 UUID 重试");
                 return;
             }
         } else if (sender instanceof Player player) {
@@ -119,7 +138,7 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
         }
         UUID uuid = resolveUuid(args[1]);
         if (uuid == null) {
-            sender.sendMessage("找不到玩家 " + args[1]);
+            sender.sendMessage("找不到玩家 " + args[1] + "，可用其 UUID 重试");
             return;
         }
         plugin.getDataManager().reset(uuid);
@@ -173,11 +192,17 @@ public class StatTrackerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("  /stattracker integrations - 查看联动插件状态");
     }
 
+    /** 解析玩家：在线精确匹配 -> 本地名字索引 -> 输入本身是 UUID；均失败返回 null，不做阻塞网络查询 */
     private UUID resolveUuid(String name) {
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) return online.getUniqueId();
-        OfflinePlayer offline = Bukkit.getOfflinePlayer(name);
-        return offline != null ? offline.getUniqueId() : null;
+        UUID indexed = uuidsByName.get(name.toLowerCase(Locale.ROOT));
+        if (indexed != null) return indexed;
+        try {
+            return UUID.fromString(name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     private String present(String name) {

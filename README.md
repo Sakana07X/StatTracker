@@ -12,7 +12,7 @@ Works as a data source for achievement/title systems like CyuTitles, anti-cheat 
 
 ### Compatibility
 
-Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.13+. Auto-detects server type at startup.
+Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.20+. Auto-detects server type at startup.
 
 ### What It Tracks
 
@@ -29,7 +29,7 @@ Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.13+. Auto-dete
 
 Put `StatTracker-<version>.jar` from Releases into `plugins`, restart. Zero dependencies.
 
-Data: `plugins/StatTracker/tracker-data.json`
+Data: per-player shards in `plugins/StatTracker/players/<uuid>.json`, plus `tracker-data.json` as a consolidated snapshot written on shutdown.
 
 ### Integrations
 
@@ -87,7 +87,7 @@ boolean met = plugin.getConditionManager().isMet(player.getUniqueId(), "mining_m
 
 ### 兼容性
 
-Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.13 以上。启动时自动检测。
+Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.20 以上。启动时自动检测。
 
 ### 追踪内容
 
@@ -104,7 +104,7 @@ Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.13 以上。启动时�
 
 把 Releases 里的 `StatTracker-<version>.jar` 丢进 `plugins`，重启。不需要前置插件。
 
-数据：`plugins/StatTracker/tracker-data.json`
+数据：分片存于 `plugins/StatTracker/players/<uuid>.json`（每玩家一个文件，只写有变动的），`tracker-data.json` 为关服时写出的合并快照（兼容旧版本回滚读取）。
 
 ### 联动
 

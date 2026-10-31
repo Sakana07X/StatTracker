@@ -62,6 +62,9 @@ public class MovementTracker implements Listener {
     private final Set<UUID> sprinting = ConcurrentHashMap.newKeySet();
     private final Set<UUID> movedPlayers = ConcurrentHashMap.newKeySet();
 
+    // 结构定位结果复用缓存：键含世界与结构，全玩家共享一个实例即可
+    private final StructureLocateCache structCache = new StructureLocateCache();
+
     private static class PlayerMoveState {
         Location lastBiomeCheck;
         Location lastStructCheck;
@@ -152,8 +155,8 @@ public class MovementTracker implements Listener {
             && shouldCheck(state.lastStructCheck, to, STRUCT_CHECK_DIST_SQ)) {
             state.lastStructCheck = to.clone();
             for (var entry : NETHER_STRUCTURES.entrySet()) {
-                var result = to.getWorld().locateNearestStructure(to, entry.getValue(), 10, false);
-                if (result != null && result.getLocation().distanceSquared(to) < 400) {
+                var result = structCache.locate(to.getWorld(), entry.getValue(), to, 10, false);
+                if (result != null && result.distanceSquared(to) < 400) {
                     data.addToSet(StatKeys.NETHER_STRUCTURES, entry.getKey());
                     break;
                 }

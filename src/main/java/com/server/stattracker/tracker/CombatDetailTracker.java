@@ -20,9 +20,31 @@ import org.bukkit.entity.Explosive;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Material;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 public class CombatDetailTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
+
+    // DamageCause 是封闭枚举：键串按枚举惰性缓存，避免燃烧/窒息等每 tick 伤害事件反复拼串
+    private static final Map<EntityDamageEvent.DamageCause, String> DEALT_KEYS = new EnumMap<>(EntityDamageEvent.DamageCause.class);
+    private static final Map<EntityDamageEvent.DamageCause, String> TAKEN_KEYS = new EnumMap<>(EntityDamageEvent.DamageCause.class);
+    // 死亡原因键串：cause 为枚举名或 "UNKNOWN"（无 lastDmg 时），故按字符串缓存
+    private static final Map<String, String> DEATH_KEYS = new ConcurrentHashMap<>();
+
+    private static String dealtKey(EntityDamageEvent.DamageCause cause) {
+        return DEALT_KEYS.computeIfAbsent(cause, c -> StatKeys.DMG_DEALT_PREFIX + c.name());
+    }
+
+    private static String takenKey(EntityDamageEvent.DamageCause cause) {
+        return TAKEN_KEYS.computeIfAbsent(cause, c -> StatKeys.DMG_TAKEN_PREFIX + c.name());
+    }
+
+    private static String deathKey(String cause) {
+        return DEATH_KEYS.computeIfAbsent(cause, c -> StatKeys.DEATH_CAUSE_PREFIX + c);
+    }
 
     public CombatDetailTracker(StatTrackerPlugin plugin) {
         this.plugin = plugin;
@@ -35,7 +57,7 @@ public class CombatDetailTracker implements Listener {
 
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.addDouble(StatKeys.DAMAGE_DEALT, amount);
-        data.addDouble(StatKeys.DMG_DEALT_PREFIX + event.getCause().name(), amount);
+        data.addDouble(dealtKey(event.getCause()), amount);
 
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
@@ -101,7 +123,7 @@ public class CombatDetailTracker implements Listener {
 
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.addDouble(StatKeys.DAMAGE_TAKEN, amount);
-        data.addDouble(StatKeys.DMG_TAKEN_PREFIX + event.getCause().name(), amount);
+        data.addDouble(takenKey(event.getCause()), amount);
 
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
@@ -120,7 +142,7 @@ public class CombatDetailTracker implements Listener {
         }
 
         String cause = lastDmg != null ? lastDmg.getCause().name() : "UNKNOWN";
-        data.increment(StatKeys.DEATH_CAUSE_PREFIX + cause);
+        data.increment(deathKey(cause));
         data.increment(StatKeys.DEATH_CAUSE_COUNT_PREFIX + cause);
 
         data.setCounter(StatKeys.LAST_DEATH_X, player.getLocation().getBlockX());

@@ -17,6 +17,15 @@ public class ConditionManager {
     private static final PlayerTrackData EMPTY = new PlayerTrackData();
     private static final int MAX_DEPTH = 16;
 
+    // 每 UUID 评估结果缓存 TTL：1 秒陈旧度换取高频占位符/桥路径零重算；
+    // 权限桥 flush 周期（30 秒）不受影响
+    private static final long CACHE_TTL_MS = 1000L;
+    // 缓存条目数超过该值时顺手清理过期项，防离线 UUID 无界堆积
+    private static final int CACHE_SWEEP_THRESHOLD = 1024;
+    private final ConcurrentHashMap<UUID, CachedEvaluation> evaluationCache = new ConcurrentHashMap<>();
+    // 小写条件 ID -> 精确 ID 索引，支持大小写不敏感查找（精确 map 始终权威）
+    private final Map<String, String> lowerIndex = new ConcurrentHashMap<>();
+
     public enum Type { COUNTER, DOUBLE, SET_SIZE, SET_CONTAINS, BOOLEAN }
 
     // 组合条件的单个子项：引用条件 ID，或内联统计
@@ -73,7 +82,9 @@ public class ConditionManager {
     }
 
     public void load() {
+        evaluationCache.clear(); // 配置重载后旧评估结果立即失效
         conditions.clear();
+        lowerIndex.clear();
         if (!configFile.exists()) {
             plugin.saveResource("conditions.yml", false);
         }
@@ -100,6 +111,12 @@ public class ConditionManager {
 
                 conditions.put(id, new Condition(id, display, type, key, op, val,
                     contains, permission, revokeCommand, requires));
+                String lower = id.toLowerCase(Locale.ROOT);
+                String prev = lowerIndex.putIfAbsent(lower, id);
+                if (prev != null) {
+                    plugin.getLogger().warning("Condition ids '" + prev + "' and '" + id
+                        + "' differ only by case; case-insensitive lookups resolve to '" + prev + "'");
+                }
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Skipped invalid condition '" + id + "': " + e.getMessage());
             }
@@ -170,22 +187,37 @@ public class ConditionManager {
     }
 
     public boolean isMet(UUID uuid, String conditionId) {
-        Condition c = conditions.get(conditionId);
-        if (c == null) return false;
-        return evaluate(c, dataOf(uuid), 0);
+        Condition c = getCondition(conditionId); // 精确优先，其次小写索引
+        if (c == null) return false; // 条件不存在直接 false，不写缓存
+        return isMet(uuid, c);
     }
 
     public boolean isMet(UUID uuid, Condition c) {
+        // 仅当传入对象是当前权威条目时读缓存，否则按原语义直接评估
+        if (c != null && conditions.get(c.id) == c) {
+            Boolean cached = checkAll(uuid).get(c.id);
+            if (cached != null) return cached;
+        }
         return evaluate(c, dataOf(uuid), 0);
     }
 
     public Map<String, Boolean> checkAll(UUID uuid) {
+        long now = System.currentTimeMillis();
+        CachedEvaluation cached = evaluationCache.get(uuid);
+        if (cached != null && now - cached.at < CACHE_TTL_MS) {
+            return cached.results; // 命中未过期：直接返回快照
+        }
         PlayerTrackData data = dataOf(uuid);
         Map<String, Boolean> result = new LinkedHashMap<>();
         for (var entry : conditions.entrySet()) {
             result.put(entry.getKey(), evaluate(entry.getValue(), data, 0));
         }
-        return result;
+        Map<String, Boolean> snapshot = Collections.unmodifiableMap(result);
+        evaluationCache.put(uuid, new CachedEvaluation(now, snapshot));
+        if (evaluationCache.size() > CACHE_SWEEP_THRESHOLD) {
+            evaluationCache.values().removeIf(e -> now - e.at >= CACHE_TTL_MS);
+        }
+        return snapshot;
     }
 
     private PlayerTrackData dataOf(UUID uuid) {
@@ -194,7 +226,10 @@ public class ConditionManager {
     }
 
     public Condition getCondition(String id) {
-        return conditions.get(id);
+        Condition c = conditions.get(id); // 先精确查
+        if (c != null) return c;
+        String exact = lowerIndex.get(id.toLowerCase(Locale.ROOT));
+        return exact != null ? conditions.get(exact) : null;
     }
 
     public Collection<Condition> getAllConditions() {
@@ -255,5 +290,16 @@ public class ConditionManager {
             case "!=" -> actual != value;
             default -> false;
         };
+    }
+
+    // 不可变的评估快照：at 为构建时刻（millis），results 构建后不再变化且对外不可变
+    private static final class CachedEvaluation {
+        final long at;
+        final Map<String, Boolean> results;
+
+        CachedEvaluation(long at, Map<String, Boolean> results) {
+            this.at = at;
+            this.results = results;
+        }
     }
 }

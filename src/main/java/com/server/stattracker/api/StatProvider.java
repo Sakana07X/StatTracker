@@ -8,6 +8,9 @@ import java.util.UUID;
 
 public class StatProvider {
 
+    /** 只读零值实例：getRawData 无数据时返回它，避免在 dataManager 中创建并持久化空条目 */
+    private static final PlayerTrackData EMPTY = new PlayerTrackData();
+
     private final DataManager dataManager;
 
     public StatProvider(DataManager dataManager) {
@@ -60,11 +63,12 @@ public class StatProvider {
     }
 
     public PlayerTrackData getRawData(Player player) {
-        return dataManager.get(player.getUniqueId());
+        return getRawData(player.getUniqueId());
     }
 
     public PlayerTrackData getRawData(UUID uuid) {
-        return dataManager.get(uuid);
+        PlayerTrackData data = dataManager.getIfPresent(uuid);
+        return data != null ? data : EMPTY;
     }
 
     public void increment(Player player, String key) {

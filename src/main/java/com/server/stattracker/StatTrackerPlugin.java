@@ -11,6 +11,7 @@ import com.server.stattracker.integration.PAPIExpansion;
 import com.server.stattracker.integration.PermissionBridge;
 import com.server.stattracker.integration.VaultPermissionBridge;
 import com.server.stattracker.tracker.*;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class StatTrackerPlugin extends JavaPlugin {
@@ -23,7 +24,13 @@ public class StatTrackerPlugin extends JavaPlugin {
     private PlaytimeTracker playtimeTracker;
     private ConditionManager conditionManager;
     private ConditionPermissionBridge conditionBridge;
+    private ConditionPAPI conditionPapi;
     private VanillaSeeder vanillaSeeder;
+    // 周期任务句柄；条件桥 flush 需在关闭条件系统时取消，其余统一存句柄便于后续管理
+    private ServerScheduler.TaskHandle dataSaveHandle;
+    private ServerScheduler.TaskHandle movementFlushHandle;
+    private ServerScheduler.TaskHandle playtimeFlushHandle;
+    private ServerScheduler.TaskHandle conditionFlushHandle;
     
     @Override
     public void onEnable() {
@@ -41,12 +48,12 @@ public class StatTrackerPlugin extends JavaPlugin {
         }
 
         registerTrackers();
-        scheduler.runAtFixedRate(60, 60, () -> dataManager.saveDirty());
+        dataSaveHandle = scheduler.runAtFixedRate(60, 60, () -> dataManager.saveDirty());
         if (movementTracker != null) {
-            scheduler.runAtFixedRate(60, 60, () -> movementTracker.flushDirty());
+            movementFlushHandle = scheduler.runAtFixedRate(60, 60, () -> movementTracker.flushDirty());
         }
         if (playtimeTracker != null) {
-            scheduler.runAtFixedRate(600, 600, () -> playtimeTracker.flushAll());
+            playtimeFlushHandle = scheduler.runAtFixedRate(600, 600, () -> playtimeTracker.flushAll());
         }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PAPIExpansion(this).register();
@@ -88,7 +95,28 @@ public class StatTrackerPlugin extends JavaPlugin {
                     initConditionBridge();
                 }
             }
+            // 修复注册缺口：占位符扩展只在首次 initConditionSystem 注册，"关条件→再开条件"后需补注册
+            if (conditionPapi == null && getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                conditionPapi = new ConditionPAPI(this, conditionManager);
+                conditionPapi.register();
+            }
             if (conditionBridge != null) conditionBridge.flush();
+        } else {
+            // 关闭条件系统：取消桥 flush 任务、注销监听与占位符；conditionManager 实例保留，
+            // getConditionManager() 的 Java API 调用方契约不变
+            if (conditionFlushHandle != null) {
+                conditionFlushHandle.cancel();
+                conditionFlushHandle = null;
+            }
+            if (conditionBridge != null) {
+                HandlerList.unregisterAll(conditionBridge);
+                conditionBridge = null;
+            }
+            if (conditionPapi != null) {
+                conditionPapi.unregister();
+                conditionPapi = null;
+            }
+            getLogger().info("条件系统已关闭：权限桥与占位符扩展已注销");
         }
     }
 
@@ -102,7 +130,7 @@ public class StatTrackerPlugin extends JavaPlugin {
         }
         conditionBridge = new ConditionPermissionBridge(this, conditionManager, permBridge);
         getServer().getPluginManager().registerEvents(conditionBridge, this);
-        scheduler.runAtFixedRate(600, 600, () -> conditionBridge.flush());
+        conditionFlushHandle = scheduler.runAtFixedRate(600, 600, () -> conditionBridge.flush());
         getLogger().info("ConditionPermissionBridge enabled - 权限后端: " + permBridge.getName());
     }
 
@@ -115,7 +143,8 @@ public class StatTrackerPlugin extends JavaPlugin {
             getLogger().info("没有带 permission 的条件，条件权限桥未启用");
         }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new ConditionPAPI(this, conditionManager).register();
+            conditionPapi = new ConditionPAPI(this, conditionManager);
+            conditionPapi.register();
         }
     }
 

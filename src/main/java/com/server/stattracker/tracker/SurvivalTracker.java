@@ -44,7 +44,9 @@ public class SurvivalTracker implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
+        // 记录不存在（如被管理员 reset）时直接跳过，避免退出时重建空记录并持久化
+        PlayerTrackData data = plugin.getDataManager().getIfPresent(player.getUniqueId());
+        if (data == null) return;
         long now = System.currentTimeMillis();
 
         long joinTime = data.getCounter(StatKeys.JOIN_TIME);
