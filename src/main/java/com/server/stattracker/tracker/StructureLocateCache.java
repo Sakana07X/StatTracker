@@ -17,19 +17,31 @@ public final class StructureLocateCache {
     // 代价是最坏情况下更近的同类型结构会延迟最多 128 格行程才被发现（有界延迟，最终必被发现）。
     private static final double REUSE_WINDOW_SQ = 128 * 128;
 
-    // 外层键用 world.getUID() 而非 World 引用，避免持有已卸载世界的强引用；
+    // 外层键用 world.getUID() 而非 World 引用，Entry 只存坐标不存 Location，均不持有已卸载世界的强引用；
     // locateNearestStructure 是世界作用域查询，且 Location.distanceSquared 跨世界会抛异常，键必须含世界。
     private final Map<UUID, Map<String, Entry>> cache = new ConcurrentHashMap<>();
 
-    // origin 为 null 表示否定缓存（附近无该类型结构），返回 null 与 locate 未找到语义一致
+    // present=false 表示否定缓存（附近无该类型结构），命中时返回 null 与 locate 未找到语义一致；
+    // 只存坐标三元组不存 Location，命中时按查询世界重建瞬态 Location，缓存不持有任何对象引用
     private static final class Entry {
-        final Location origin;
+        final boolean present;
+        final double originX;
+        final double originY;
+        final double originZ;
         final double queryX;
         final double queryZ;
-        Entry(Location origin, double queryX, double queryZ) {
-            this.origin = origin;
+        Entry(boolean present, double originX, double originY, double originZ, double queryX, double queryZ) {
+            this.present = present;
+            this.originX = originX;
+            this.originY = originY;
+            this.originZ = originZ;
             this.queryX = queryX;
             this.queryZ = queryZ;
+        }
+        static Entry of(Location origin, double queryX, double queryZ) {
+            return origin == null
+                ? new Entry(false, 0.0, 0.0, 0.0, queryX, queryZ)
+                : new Entry(true, origin.getX(), origin.getY(), origin.getZ(), queryX, queryZ);
         }
     }
 
@@ -48,7 +60,10 @@ public final class StructureLocateCache {
                 double dx = query.getX() - entry.queryX;
                 double dz = query.getZ() - entry.queryZ;
                 if (dx * dx + dz * dz <= REUSE_WINDOW_SQ) {
-                    return entry.origin;
+                    // 命中：用本次查询的世界重建瞬态 Location，用完即弃，缓存不保留
+                    return entry.present
+                        ? new Location(world, entry.originX, entry.originY, entry.originZ)
+                        : null;
                 }
             }
         }
@@ -56,7 +71,7 @@ public final class StructureLocateCache {
         var result = world.locateNearestStructure(query, structure, radius, findUnexplored);
         Location origin = result == null ? null : result.getLocation();
         cache.computeIfAbsent(worldId, k -> new ConcurrentHashMap<>(16))
-             .put(structureKey, new Entry(origin, query.getX(), query.getZ()));
+             .put(structureKey, Entry.of(origin, query.getX(), query.getZ()));
         return origin;
     }
 }

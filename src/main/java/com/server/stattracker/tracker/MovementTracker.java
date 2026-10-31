@@ -258,7 +258,8 @@ public class MovementTracker implements Listener {
         DataManager dm = plugin.getDataManager();
         for (UUID uuid : movedPlayers) {
             dm.markDirty(uuid);
+            // 逐元素移除代替整体 clear()，避免误清迭代期间区域线程新 mark 的 uuid
+            movedPlayers.remove(uuid);
         }
-        movedPlayers.clear();
     }
 }
