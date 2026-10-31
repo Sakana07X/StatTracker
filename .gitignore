@@ -6,3 +6,8 @@ build/
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 !lib/*.jar
+
+# 本地工具与工作流产物，不入库
+.tmp/
+.mimosa/
+CODEX-AGENT-PROJECT.md
