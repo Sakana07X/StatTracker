@@ -25,6 +25,10 @@ Bukkit, Spigot, Paper, Purpur, Pufferfish, Folia — any server 1.20+. Auto-dete
 - Data kept in memory between saves, no repeated file reads
 - Thread-safe collections for async events, full save on shutdown
 
+### Tracker Toggles
+
+Each tracker can be switched off individually in `config.yml` under `trackers.*` (for example `trackers.fishing: false`). All default to `true`, so the default config changes nothing. Disabling a tracker only skips registering its event listener: it stops counting new events. Players with saved history keep those values; players without history report 0, and the vanilla stat backfill (`seed.vanilla_stats`) may still write keys of disabled trackers on a player's first join.
+
 ### Usage
 
 Put `StatTracker-<version>.jar` from Releases into `plugins`, restart. Zero dependencies.
@@ -99,6 +103,10 @@ Bukkit、Spigot、Paper、Purpur、Pufferfish、Folia，1.20 以上。启动时�
 - 只标记真正变化过的玩家，每3秒批量写入，不做全量扫描
 - 数据保存在内存中，保存时不再反复读文件
 - 并发安全集合，兼容异步事件，关闭时全量保存
+
+### 追踪开关
+
+每个追踪器都能在 `config.yml` 的 `trackers.*` 下单独关闭（例如 `trackers.fishing: false`）。默认全部为 `true`，默认配置下行为与旧版完全一致。禁用某个追踪器只是不注册它的事件监听器：不再统计新事件。已有存档的玩家数值保留不变，无历史的玩家报 0，且原版统计回填（`seed.vanilla_stats`）在玩家首次加入时仍可能写入已禁用追踪器的键。
 
 ### 使用
 

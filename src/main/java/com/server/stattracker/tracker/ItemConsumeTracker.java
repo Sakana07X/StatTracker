@@ -11,7 +11,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 public class ItemConsumeTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
@@ -32,6 +34,18 @@ public class ItemConsumeTracker implements Listener {
         "CHORUS_FRUIT"
     );
 
+    // 热路径键串缓存：Material 枚举数即上界，避免每次进食拼串产生垃圾
+    private static final Map<Material, String> CONSUME_KEYS = new ConcurrentHashMap<>();
+    private static final Map<Material, String> FOOD_KEYS = new ConcurrentHashMap<>();
+
+    private static String consumeKey(Material material) {
+        return CONSUME_KEYS.computeIfAbsent(material, m -> StatKeys.CONSUME_PREFIX + m.name());
+    }
+
+    private static String foodKey(Material material) {
+        return FOOD_KEYS.computeIfAbsent(material, m -> StatKeys.CONSUME_FOOD_PREFIX + m.name());
+    }
+
     public ItemConsumeTracker(StatTrackerPlugin plugin) {
         this.plugin = plugin;
     }
@@ -44,7 +58,7 @@ public class ItemConsumeTracker implements Listener {
 
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
         data.increment(StatKeys.CONSUME_TOTAL);
-        data.increment(StatKeys.CONSUME_PREFIX + name);
+        data.increment(consumeKey(mat));
 
         if (POTIONS.contains(mat)) {
             data.increment(StatKeys.POTIONS_DRUNK);
@@ -52,7 +66,7 @@ public class ItemConsumeTracker implements Listener {
             data.increment(StatKeys.MILK_DRUNK);
         } else if (FOOD_NAMES.contains(name)) {
             data.increment(StatKeys.FOOD_EATEN);
-            data.increment(StatKeys.CONSUME_FOOD_PREFIX + name);
+            data.increment(foodKey(mat));
         }
 
         plugin.getDataManager().markDirty(player.getUniqueId());

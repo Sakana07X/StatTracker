@@ -11,7 +11,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 public class MiningTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
@@ -21,6 +23,18 @@ public class MiningTracker implements Listener {
         "ACACIA_LOG", "DARK_OAK_LOG", "MANGROVE_LOG",
         "CHERRY_LOG", "CRIMSON_STEM", "WARPED_STEM"
     );
+
+    // 热路径键串缓存：Material 枚举数即上界，避免每次挖方块拼串产生垃圾
+    private static final Map<Material, String> MINE_KEYS = new ConcurrentHashMap<>();
+    private static final Map<Material, String> LOG_KEYS = new ConcurrentHashMap<>();
+
+    private static String mineKey(Material material) {
+        return MINE_KEYS.computeIfAbsent(material, m -> StatKeys.MINING_PREFIX + m.name());
+    }
+
+    private static String logKey(Material material) {
+        return LOG_KEYS.computeIfAbsent(material, m -> StatKeys.LOGS_PREFIX + m.name());
+    }
 
     public MiningTracker(StatTrackerPlugin plugin) {
         this.plugin = plugin;
@@ -35,10 +49,10 @@ public class MiningTracker implements Listener {
 
         data.increment(StatKeys.MINING_TOTAL);
 
-        data.increment(StatKeys.MINING_PREFIX + name);
+        data.increment(mineKey(mat));
 
         if (LOG_MATERIALS.contains(name)) {
-            data.increment(StatKeys.LOGS_PREFIX + name);
+            data.increment(logKey(mat));
         }
 
         plugin.getDataManager().markDirty(player.getUniqueId());

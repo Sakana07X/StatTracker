@@ -49,6 +49,9 @@ public class StatTrackerPlugin extends JavaPlugin {
 
         registerTrackers();
         dataSaveHandle = scheduler.runAtFixedRate(60, 60, () -> dataManager.saveDirty());
+        // 离线玩家驱逐清扫：6000 tick（5 分钟）一轮，纯内存操作；
+        // DataManager 构造器内已自注册 join/quit 监听，插件侧不再重复注册
+        scheduler.runAtFixedRate(6000, 6000, dataManager::sweepEvictable);
         if (movementTracker != null) {
             movementFlushHandle = scheduler.runAtFixedRate(60, 60, () -> movementTracker.flushDirty());
         }
@@ -158,37 +161,44 @@ public class StatTrackerPlugin extends JavaPlugin {
         movementTracker = new MovementTracker(this);
         playtimeTracker = new PlaytimeTracker(this);
 
-        register(pm, movementTracker);
-        register(pm, new MiningTracker(this));
-        register(pm, new BlockPlaceTracker(this));
-        register(pm, new CraftingTracker(this));
-        register(pm, new CombatTracker(this));
-        register(pm, new CombatDetailTracker(this));
-        register(pm, new FishingTracker(this));
-        register(pm, new BrewingTracker(this));
-        register(pm, new ItemConsumeTracker(this));
-        register(pm, new EnchantingTracker(this));
-        register(pm, new TradingTracker(this));
-        register(pm, new DimensionTracker(this));
-        register(pm, new PortalTracker(this));
-        register(pm, new ProjectileTracker(this));
-        register(pm, new TamingTracker(this));
-        register(pm, new FarmingTracker(this));
-        register(pm, new HarvestTracker(this));
-        register(pm, new RedstoneTracker(this));
-        register(pm, new MapTracker(this));
-        register(pm, new ContainerTracker(this));
-        register(pm, new ItemPickupDropTracker(this));
-        register(pm, new InteractionTracker(this));
-        register(pm, new AdvancementTracker(this));
-        register(pm, new ExperienceTracker(this));
-        register(pm, new SurvivalTracker(this));
-        register(pm, playtimeTracker);
-        register(pm, new ChatTracker(this));
-        register(pm, new MiscTracker(this));
+        registerIf("movement", pm, movementTracker);
+        registerIf("mining", pm, new MiningTracker(this));
+        registerIf("block_place", pm, new BlockPlaceTracker(this));
+        registerIf("crafting", pm, new CraftingTracker(this));
+        registerIf("combat", pm, new CombatTracker(this));
+        registerIf("combat_detail", pm, new CombatDetailTracker(this));
+        registerIf("fishing", pm, new FishingTracker(this));
+        registerIf("brewing", pm, new BrewingTracker(this));
+        registerIf("item_consume", pm, new ItemConsumeTracker(this));
+        registerIf("enchanting", pm, new EnchantingTracker(this));
+        registerIf("trading", pm, new TradingTracker(this));
+        registerIf("dimension", pm, new DimensionTracker(this));
+        registerIf("portal", pm, new PortalTracker(this));
+        registerIf("projectile", pm, new ProjectileTracker(this));
+        registerIf("taming", pm, new TamingTracker(this));
+        registerIf("farming", pm, new FarmingTracker(this));
+        registerIf("harvest", pm, new HarvestTracker(this));
+        registerIf("redstone", pm, new RedstoneTracker(this));
+        registerIf("map", pm, new MapTracker(this));
+        registerIf("container", pm, new ContainerTracker(this));
+        registerIf("item_pickup_drop", pm, new ItemPickupDropTracker(this));
+        registerIf("interaction", pm, new InteractionTracker(this));
+        registerIf("advancement", pm, new AdvancementTracker(this));
+        registerIf("experience", pm, new ExperienceTracker(this));
+        registerIf("survival", pm, new SurvivalTracker(this));
+        registerIf("playtime", pm, playtimeTracker);
+        registerIf("chat", pm, new ChatTracker(this));
+        registerIf("misc", pm, new MiscTracker(this));
     }
 
     private void register(org.bukkit.plugin.PluginManager pm, org.bukkit.event.Listener listener) {
         pm.registerEvents(listener, this);
+    }
+
+    // tracker 配置门禁：trackers.<key> 默认全开（零行为变化），false 则不注册监听器
+    private void registerIf(String key, org.bukkit.plugin.PluginManager pm, org.bukkit.event.Listener listener) {
+        if (getConfig().getBoolean("trackers." + key, true)) {
+            register(pm, listener);
+        }
     }
 }

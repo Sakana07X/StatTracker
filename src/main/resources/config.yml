@@ -10,3 +10,38 @@ conditions:
 # so conditions align with vanilla-stat-based titles (one-time backfill)
 seed:
   vanilla_stats: true
+
+# Per-tracker toggles. All default to true (zero behavior change).
+# Disabling a tracker only skips registering its listener: it stops counting
+# new events. Players with saved history keep those values; players without
+# history report 0, and vanilla stat backfill (seed.vanilla_stats) may still
+# write keys of disabled trackers on first join.
+trackers:
+  movement: true
+  mining: true
+  block_place: true
+  crafting: true
+  combat: true
+  combat_detail: true
+  fishing: true
+  brewing: true
+  item_consume: true
+  enchanting: true
+  trading: true
+  dimension: true
+  portal: true
+  projectile: true
+  taming: true
+  farming: true
+  harvest: true
+  redstone: true
+  map: true
+  container: true
+  item_pickup_drop: true
+  interaction: true
+  advancement: true
+  experience: true
+  survival: true
+  playtime: true
+  chat: true
+  misc: true

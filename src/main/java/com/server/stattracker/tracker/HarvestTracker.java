@@ -13,7 +13,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 public class HarvestTracker implements Listener {
 
     private final StatTrackerPlugin plugin;
@@ -22,6 +24,13 @@ public class HarvestTracker implements Listener {
         Material.NETHER_WART, Material.COCOA, Material.SWEET_BERRY_BUSH,
         Material.TORCHFLOWER, Material.PITCHER_PLANT
     );
+
+    // 热路径键串缓存：Material 枚举数即上界，避免每次收获拼串产生垃圾
+    private static final Map<Material, String> HARVEST_KEYS = new ConcurrentHashMap<>();
+
+    private static String harvestKey(Material material) {
+        return HARVEST_KEYS.computeIfAbsent(material, m -> StatKeys.HARVEST_PREFIX + m.name());
+    }
 
     public HarvestTracker(StatTrackerPlugin plugin) {
         this.plugin = plugin;
@@ -36,7 +45,7 @@ public class HarvestTracker implements Listener {
 
         Player player = event.getPlayer();
         PlayerTrackData data = plugin.getDataManager().get(player.getUniqueId());
-        data.increment(StatKeys.HARVEST_PREFIX + block.getType().name());
+        data.increment(harvestKey(block.getType()));
         plugin.getDataManager().markDirty(player.getUniqueId());
     }
 }

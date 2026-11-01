@@ -46,6 +46,28 @@ public class CombatDetailTracker implements Listener {
         return DEATH_KEYS.computeIfAbsent(cause, c -> StatKeys.DEATH_CAUSE_PREFIX + c);
     }
 
+    // 护甲槽位键串缓存：Material 枚举数即上界，避免每次击杀拼 4 个护甲键产生垃圾
+    private static final Map<Material, String> HEAD_ARMOR_KEYS = new ConcurrentHashMap<>();
+    private static final Map<Material, String> CHEST_ARMOR_KEYS = new ConcurrentHashMap<>();
+    private static final Map<Material, String> LEGS_ARMOR_KEYS = new ConcurrentHashMap<>();
+    private static final Map<Material, String> FEET_ARMOR_KEYS = new ConcurrentHashMap<>();
+
+    private static String headArmorKey(Material material) {
+        return HEAD_ARMOR_KEYS.computeIfAbsent(material, m -> StatKeys.ARMOR_HEAD_PREFIX + m.name());
+    }
+
+    private static String chestArmorKey(Material material) {
+        return CHEST_ARMOR_KEYS.computeIfAbsent(material, m -> StatKeys.ARMOR_CHEST_PREFIX + m.name());
+    }
+
+    private static String legsArmorKey(Material material) {
+        return LEGS_ARMOR_KEYS.computeIfAbsent(material, m -> StatKeys.ARMOR_LEGS_PREFIX + m.name());
+    }
+
+    private static String feetArmorKey(Material material) {
+        return FEET_ARMOR_KEYS.computeIfAbsent(material, m -> StatKeys.ARMOR_FEET_PREFIX + m.name());
+    }
+
     public CombatDetailTracker(StatTrackerPlugin plugin) {
         this.plugin = plugin;
     }
@@ -107,10 +129,10 @@ public class CombatDetailTracker implements Listener {
         } else {
             boolean fullArmor = hasHelmet && hasChestplate && hasLeggings && hasBoots;
             if (fullArmor) data.increment(StatKeys.FULL_ARMOR_KILLS);
-            if (hasHelmet)    data.increment(StatKeys.ARMOR_HEAD_PREFIX  + head.getType().name());
-            if (hasChestplate) data.increment(StatKeys.ARMOR_CHEST_PREFIX + chest.getType().name());
-            if (hasLeggings)  data.increment(StatKeys.ARMOR_LEGS_PREFIX  + legs.getType().name());
-            if (hasBoots)     data.increment(StatKeys.ARMOR_FEET_PREFIX  + feet.getType().name());
+            if (hasHelmet)    data.increment(headArmorKey(head.getType()));
+            if (hasChestplate) data.increment(chestArmorKey(chest.getType()));
+            if (hasLeggings)  data.increment(legsArmorKey(legs.getType()));
+            if (hasBoots)     data.increment(feetArmorKey(feet.getType()));
         }
 
         plugin.getDataManager().markDirty(killer.getUniqueId());
